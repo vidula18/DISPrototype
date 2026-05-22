@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import {
   Send, MapPin, ArrowLeft, Users, Clock, CheckCircle2,
   CircleDot, Loader2, AlertCircle, Mic, ChevronRight, SkipForward,
-  FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye,
+  FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye, Plus
 } from "lucide-react";
 import type { Complaint, ComplaintStatus, StructuredOutput } from "../App";
 import { getCluster, inferIntent, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
@@ -135,6 +135,7 @@ const T: Record<Lang, Record<string, string>> = {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Screen =
+  | "landing"
   | "home"
   | "ack"
   | "step_context"
@@ -150,6 +151,39 @@ interface Props {
   complaints: Complaint[];
   onAddComplaint: (text: string, location: string) => Complaint;
   onUpdateComplaint: (id: string, updates: Partial<Complaint>) => void;
+}
+
+// ─── Screen Components ────────────────────────────────────────────────────────
+
+function LandingScreen({ onStart, t }: { onStart: () => void, t: Record<string, string> }) {
+  return (
+    <div className="flex flex-col h-full px-6 pt-10 pb-10 bg-transparent relative z-10">
+      <div className="mb-auto mt-4 text-center">
+        <h1 className="font-extrabold text-black text-3xl tracking-tight drop-shadow-sm opacity-90">
+          Your Community
+        </h1>
+        <p className="text-sm font-medium text-black/60 mt-2">
+          A living snapshot of civic activity.
+        </p>
+      </div>
+
+      {/* Massive spacer to let the 3D cubes shine */}
+      <div className="flex-1 min-h-[350px] pointer-events-none" />
+
+      <div className="mt-auto flex justify-center pb-8">
+        <button
+          onClick={onStart}
+          aria-label="Add complaint"
+          className="flex items-center gap-3 bg-black text-white px-6 py-4 rounded-full shadow-2xl active:scale-95 transition-all hover:bg-black/90"
+        >
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <Plus className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-bold text-base tracking-wide">Add complaint</span>
+        </button>
+      </div>
+    </div>
+  );
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -1155,7 +1189,7 @@ const NAV_TABS: Array<{ id: Tab; label: string; Icon: typeof FileText }> = [
 
 export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: Props) {
   const [tab, setTab] = useState<Tab>("report");
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>("landing");
   const [lang, setLang] = useState<Lang>("en");
   const [inputText, setInputText] = useState("");
   const [location, setLocation] = useState("");
@@ -1228,7 +1262,8 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
   let systemState: SystemState = 'idle';
   if (tab === 'report') {
-    if (screen === 'home') systemState = 'idle';
+    if (screen === 'landing') systemState = 'idle';
+    else if (screen === 'home') systemState = 'idle';
     else if (screen === 'ack' || screen.startsWith('step_')) systemState = 'submitting';
     else if (screen === 'output' || screen === 'community') systemState = 'clustering';
     else if (screen === 'tracking') systemState = 'response';
@@ -1278,7 +1313,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
         {/* Screen content */}
         <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
-          {screen === "community" && (
+          {(screen === "landing" || screen === "community") && (
             <CivicStructure 
               complaints={complaints} 
               systemState={systemState} 
@@ -1289,6 +1324,9 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
           {/* Report tab: existing screen flow */}
           {tab === "report" && (
             <>
+              {screen === "landing" && (
+                <LandingScreen onStart={() => setScreen("home")} t={t} />
+              )}
               {screen === "home" && (
                 <HomeScreen
                   inputText={inputText} location={location}
