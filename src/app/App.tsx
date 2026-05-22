@@ -27,15 +27,38 @@ export interface Complaint {
   structured_output?: StructuredOutput | null;
 }
 
-export function getCluster(text: string): string {
+export function inferIntent(text: string): { cluster: string, summary: string, tags: string[] } {
   const lower = text.toLowerCase();
-  if (lower.includes("pothole") || lower.includes("road") || lower.includes("street") || lower.includes("pavement"))
-    return "Road Issues";
-  if (lower.includes("garbage") || lower.includes("waste") || lower.includes("trash") || lower.includes("dump") || lower.includes("sanit"))
-    return "Sanitation";
-  if (lower.includes("water") || lower.includes("drain") || lower.includes("flood") || lower.includes("tap") || lower.includes("pipe"))
-    return "Water Supply";
-  return "General Issues";
+  if (lower.includes("pothole") || lower.includes("road") || lower.includes("street") || lower.includes("pavement")) {
+    return {
+      cluster: "Road Issues",
+      summary: "Road safety & infrastructure",
+      tags: ["roads", "safety", "infrastructure"]
+    };
+  }
+  if (lower.includes("garbage") || lower.includes("waste") || lower.includes("trash") || lower.includes("dump") || lower.includes("sanit")) {
+    return {
+      cluster: "Sanitation",
+      summary: "Waste management & sanitation",
+      tags: ["waste", "health", "cleanliness"]
+    };
+  }
+  if (lower.includes("water") || lower.includes("drain") || lower.includes("flood") || lower.includes("tap") || lower.includes("pipe") || lower.includes("rain")) {
+    return {
+      cluster: "Water Supply",
+      summary: "Drainage & flooding infrastructure",
+      tags: ["infrastructure", "safety", "water"]
+    };
+  }
+  return {
+    cluster: "General Issues",
+    summary: "General civic matters",
+    tags: ["general", "civic"]
+  };
+}
+
+export function getCluster(text: string): string {
+  return inferIntent(text).cluster;
 }
 
 export const DEPARTMENTS = [

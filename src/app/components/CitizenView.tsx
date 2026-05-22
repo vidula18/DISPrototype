@@ -5,7 +5,9 @@ import {
   FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye,
 } from "lucide-react";
 import type { Complaint, ComplaintStatus, StructuredOutput } from "../App";
-import { getCluster, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
+import { getCluster, inferIntent, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
+import { CivicStructure, SystemState } from "./ui/CivicStructure";
+import { LocationPicker } from "./ui/LocationPicker";
 
 // ─── i18n ────────────────────────────────────────────────────────────────────
 
@@ -31,8 +33,12 @@ const T: Record<Lang, Record<string, string>> = {
     ack_skip: "Skip for now",
     // Reflection steps
     step_of: "of",
-    step_context_q: "Tell us more about what's happening.",
+    step_context_q: "How is this affecting your daily life?",
     step_context_ph: "This affects my daily commute…",
+    chip_commute: "This is affecting my commute",
+    chip_harder: "This makes it harder to get to work or school",
+    chip_safety: "This affects my safety / health / time",
+    chip_others: "This also affects others in the area",
     step_past_q: "Tell me more about what was different before.",
     step_past_ph: "Earlier this stretch was well-maintained…",
     step_vision_q: "What do you think can be done about it?",
@@ -49,12 +55,13 @@ const T: Record<Lang, Record<string, string>> = {
     vision_note: "Submitted to municipal system · Now visible to officers",
     continue_to_community: "See community impact →",
     // Community
-    community_heading: "Your Community",
-    community_stat_suffix: "of people in your ward share your vision.",
-    community_cluster: "Cluster",
-    community_time: "You spoke for ~2 minutes.",
-    community_impact: "When addressed, this could save residents time, improve safety, and reduce daily stress.",
-    track_complaint: "Track my complaint",
+    community_heading: "This issue affects more than just you",
+    community_sub: "Your voice joins a growing community movement in your ward.",
+    community_stat_pct: "of your ward shares this concern",
+    community_stat_similar: "similar reports nearby",
+    community_impact_title: "Impact if solved",
+    community_impact_desc: "If resolved, this improves daily mobility, safety, and quality of life for many residents.",
+    track_complaint: "Track complaint",
     // Tracking
     tracking_title: "Complaint Tracking",
     tracking_sub: "Live updates from municipal system",
@@ -85,8 +92,12 @@ const T: Record<Lang, Record<string, string>> = {
     ack_continue: "हाँ, और बताएं",
     ack_skip: "अभी नहीं",
     step_of: "में से",
-    step_context_q: "आगे बताएं, क्या हो रहा है?",
+    step_context_q: "यह आपके दैनिक जीवन को कैसे प्रभावित कर रहा है?",
     step_context_ph: "यह मेरी रोज़ की यात्रा को प्रभावित करता है…",
+    chip_commute: "यह मेरे आवागमन को प्रभावित कर रहा है",
+    chip_harder: "इससे काम या स्कूल जाना मुश्किल हो जाता है",
+    chip_safety: "यह मेरी सुरक्षा / स्वास्थ्य / समय को प्रभावित करता है",
+    chip_others: "यह क्षेत्र के अन्य लोगों को भी प्रभावित करता है",
     step_past_q: "पहले कैसा था? क्या बदला?",
     step_past_ph: "पहले यह सड़क ठीक रहती थी…",
     step_vision_q: "आपके अनुसार इसका हल क्या हो सकता है?",
@@ -101,11 +112,12 @@ const T: Record<Lang, Record<string, string>> = {
     vision_outcome: "वांछित परिणाम",
     vision_note: "नगर पालिका प्रणाली को भेजा गया",
     continue_to_community: "सामुदायिक प्रभाव देखें →",
-    community_heading: "आपका समुदाय",
-    community_stat_suffix: "लोग आपके वार्ड में यही सोचते हैं।",
-    community_cluster: "क्लस्टर",
-    community_time: "आपने ~2 मिनट बात की।",
-    community_impact: "इस मुद्दे के हल होने पर निवासियों का समय बचेगा और सुरक्षा बढ़ेगी।",
+    community_heading: "यह समस्या सिर्फ आपको ही नहीं, औरों को भी प्रभावित करती है",
+    community_sub: "आपकी आवाज़ आपके वार्ड के बढ़ते सामुदायिक आंदोलन से जुड़ती है।",
+    community_stat_pct: "वार्ड के लोग यह चिंता साझा करते हैं",
+    community_stat_similar: "आसपास की समान शिकायतें",
+    community_impact_title: "समाधान होने पर प्रभाव",
+    community_impact_desc: "यदि यह हल हो जाता है, तो इससे कई निवासियों की दैनिक गतिशीलता, सुरक्षा और जीवन की गुणवत्ता में सुधार होगा।",
     track_complaint: "शिकायत ट्रैक करें",
     tracking_title: "शिकायत ट्रैकिंग",
     tracking_sub: "नगर पालिका से लाइव अपडेट",
@@ -180,6 +192,79 @@ function HomeScreen({
   const canSubmit = inputText.trim().length > 3;
   const preview = inputText.trim() ? getCluster(inputText) : null;
 
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState(false);
+  const [inferredSummary, setInferredSummary] = useState<string | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const originalTextRef = useRef("");
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      setVoiceError(true);
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      originalTextRef.current = inputText ? inputText + " " : "";
+      recognitionRef.current.lang = lang === "hi" ? "hi-IN" : "en-IN";
+      
+      recognitionRef.current.onstart = () => {
+        setIsListening(true);
+        setVoiceError(false);
+        setInferredSummary(null);
+      };
+      
+      recognitionRef.current.onresult = (event: any) => {
+        let currentTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          currentTranscript += event.results[i][0].transcript;
+        }
+        onInput(originalTextRef.current + currentTranscript);
+      };
+      
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        if (event.error !== "no-speech") {
+            setVoiceError(true);
+        }
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+        // The value is available in inputText state, but due to closure we read from textarea ref to be safe or just use the preview/inferIntent on render.
+      };
+
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        setIsListening(false);
+        setVoiceError(true);
+      }
+    }
+  };
+
+  // Re-run inference when not listening but we have text
+  useEffect(() => {
+    if (!isListening && inputText.trim().length > 3) {
+      const intent = inferIntent(inputText.trim());
+      setInferredSummary(`💡 ${lang === 'en' ? 'This seems to be about' : 'यह इससे संबंधित लगता है'}: ${intent.summary.toLowerCase()}`);
+    } else if (inputText.trim().length === 0) {
+      setInferredSummary(null);
+    }
+  }, [isListening, inputText, lang]);
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -205,10 +290,6 @@ function HomeScreen({
         <p className="text-xs text-black/35 mt-1">{t.tagline}</p>
       </div>
 
-      <div className="absolute left-0 right-0 top-48 flex justify-center pointer-events-none">
-        <div className="w-72 h-72 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #FFA958 0%, transparent 70%)", filter: "blur(40px)" }} />
-      </div>
-
       {preview && (
         <div className="mx-6 mb-2.5">
           <div className="flex items-center gap-1.5 bg-[#FFA958]/10 border border-[#FFA958]/30 rounded-full px-3 py-1.5">
@@ -219,25 +300,54 @@ function HomeScreen({
       )}
 
       <div className="flex-1 px-6 flex flex-col gap-2.5 overflow-y-auto">
-        <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 shadow-sm overflow-hidden">
-          <textarea
-            ref={textareaRef}
-            value={inputText}
-            onChange={(e) => onInput(e.target.value)}
-            placeholder={t.placeholder}
-            className="w-full px-4 pt-3 pb-2 text-sm text-black bg-transparent resize-none outline-none placeholder:text-black/30 leading-relaxed"
-            style={{ minHeight: 80, maxHeight: 120 }}
-          />
-          <div className="flex items-center gap-2 px-4 pb-3 pt-1 border-t border-black/5">
-            <MapPin className="w-3.5 h-3.5 text-black/30 shrink-0" />
-            <input
-              value={location}
-              onChange={(e) => onLocation(e.target.value)}
-              placeholder={t.location_ph}
-              className="flex-1 text-xs text-black/50 bg-transparent outline-none placeholder:text-black/25"
+        <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 shadow-sm overflow-hidden flex flex-col">
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={inputText}
+              onChange={(e) => onInput(e.target.value)}
+              placeholder={t.placeholder}
+              className="w-full px-4 pt-3 pb-12 text-sm text-black bg-transparent resize-none outline-none placeholder:text-black/30 leading-relaxed"
+              style={{ minHeight: 90, maxHeight: 150 }}
             />
+            <div className="absolute right-3 bottom-3">
+              <button 
+                onClick={toggleListening}
+                aria-label={isListening ? "Stop recording" : "Start voice input"}
+                className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                  isListening 
+                    ? "bg-red-100 text-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]" 
+                    : "bg-black/5 text-black/50 hover:bg-black/10 hover:text-black/70"
+                }`}
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="border-t border-black/5">
+            <LocationPicker value={location} onChange={onLocation} lang={lang} t={t} />
           </div>
         </div>
+
+        {/* Accessibility Live Region */}
+        <div aria-live="polite" className="sr-only">
+          {isListening ? "Recording started" : "Recording stopped"}
+          {voiceError && "I may have misheard that — please review or try again."}
+        </div>
+
+        {voiceError && (
+          <div className="px-2 text-xs text-red-500/80 font-medium animate-in fade-in slide-in-from-top-1">
+            {lang === "en" ? "I may have misheard that — please review or try again." : "शायद मैंने ठीक से नहीं सुना — कृपया समीक्षा करें या पुनः प्रयास करें।"}
+          </div>
+        )}
+
+        {!isListening && inferredSummary && !voiceError && inputText.trim().length > 3 && (
+          <div className="mx-1 px-3 py-2 bg-white/50 backdrop-blur border border-black/5 rounded-xl flex items-start gap-2 animate-in fade-in slide-in-from-bottom-2">
+            <p className="text-[11px] font-medium text-black/60 leading-relaxed">
+              {inferredSummary}
+            </p>
+          </div>
+        )}
 
         <button
           onClick={onSubmit}
@@ -300,10 +410,6 @@ function AckScreen({ complaint, onContinue, onSkip, t }: {
         </div>
       </div>
 
-      <div className="absolute left-0 right-0 top-1/2 flex justify-center pointer-events-none -z-0">
-        <div className="w-64 h-64 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #FFA958 0%, transparent 70%)", filter: "blur(50px)" }} />
-      </div>
-
       <div className="flex-1 flex flex-col justify-end gap-3 relative z-10">
         <div className="bg-white/70 backdrop-blur rounded-2xl border border-black/8 p-4">
           <p className="font-extrabold text-[#FFA757] text-lg leading-snug">
@@ -336,13 +442,14 @@ function AckScreen({ complaint, onContinue, onSkip, t }: {
 
 function ReflectionCard({
   stepNum, totalSteps, question, placeholder, value, onChange,
-  onNext, onSkip, isVision, t,
+  onNext, onSkip, isVision, chips, t,
 }: {
   stepNum: number; totalSteps: number;
   question: string; placeholder: string;
   value: string; onChange: (v: string) => void;
   onNext: () => void; onSkip: () => void;
   isVision?: boolean;
+  chips?: string[];
   t: Record<string, string>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -383,11 +490,22 @@ function ReflectionCard({
         <p className="font-extrabold text-[#FFA757] text-xl leading-snug">{question}</p>
       </div>
 
-      <div className="absolute left-0 right-0 top-1/2 flex justify-center pointer-events-none -z-0">
-        <div className="w-60 h-60 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #FFA958 0%, transparent 70%)", filter: "blur(50px)" }} />
-      </div>
-
       <div className="flex-1 flex flex-col gap-3 relative z-10">
+
+        {chips && chips.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-1">
+            {chips.map(chip => (
+              <button
+                key={chip}
+                onClick={() => onChange(value ? `${value.trim()} ${chip}` : chip)}
+                className="text-[11px] font-medium text-black/60 bg-white/50 backdrop-blur border border-black/5 hover:bg-black/5 hover:text-black/80 px-3 py-1.5 rounded-full transition-all text-left shadow-sm active:scale-95"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 shadow-sm overflow-hidden">
           <textarea
             ref={textareaRef}
@@ -495,110 +613,54 @@ function CommunityScreen({ complaint, onTrack, t }: {
   complaint: Complaint; onTrack: () => void; t: Record<string, string>;
 }) {
   const pct = CLUSTER_COMMUNITY_PCT[complaint.cluster_id] ?? 18;
-  const emoji = CLUSTER_EMOJI[complaint.cluster_id] ?? "📋";
-
-  // Map to civic mission
-  const missionNames: Record<string, string> = {
-    "Road Issues": "Better & Free Mobility",
-    "Sanitation": "Cleaner Neighborhoods",
-    "Water Supply": "Healthy Air & Water",
-    "General Issues": "Reliable Infrastructure",
-  };
-  const missionName = missionNames[complaint.cluster_id] || complaint.cluster_id;
-
-  // Calculate time saved impact
-  const timeImpact = complaint.cluster_id === "Road Issues" ? 22 :
-                     complaint.cluster_id === "Sanitation" ? 15 :
-                     complaint.cluster_id === "Water Supply" ? 28 : 12;
+  const similarCount = Math.floor(pct * 3.5); // Mock number for nearby reports
 
   return (
-    <div className="flex flex-col h-full px-6 pt-8 pb-6">
-      <div className="mb-6">
-        <p className="font-extrabold text-black text-xl">{t.community_heading}</p>
-        <p className="text-xs text-black/40 mt-1">Your voice joins a movement for change</p>
+    <div className="flex flex-col h-full px-6 pt-10 pb-6 bg-transparent relative z-10">
+      {/* Top Section */}
+      <div className="mb-auto">
+        <p className="font-extrabold text-black text-2xl leading-tight drop-shadow-sm">{t.community_heading}</p>
+        <p className="text-sm font-medium text-black/60 mt-2">{t.community_sub}</p>
       </div>
 
-      {/* Main alignment card */}
-      <div className="bg-gradient-to-br from-[#FFA958]/15 via-[#FFA958]/8 to-[#FFA958]/5 border border-[#FFA958]/30 rounded-2xl p-6 mb-4 text-center relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-[#FFA958]/20 rounded-full blur-3xl" />
-        <div className="relative">
-          <div className="inline-flex items-baseline gap-2 mb-2">
-            <span className="font-extrabold text-[#FFA958]" style={{ fontSize: 56, lineHeight: 1 }}>{pct}%</span>
+      {/* Spacer for CivicStructure to shine through as hero */}
+      <div className="flex-1 min-h-[200px] pointer-events-none" />
+
+      {/* Stats & Impact Section */}
+      <div className="flex flex-col gap-3 mt-auto">
+        
+        {/* Compact Stats Row */}
+        <div className="flex gap-3">
+          <div className="flex-1 bg-white/70 backdrop-blur rounded-2xl border border-black/5 p-4 shadow-sm flex flex-col justify-center">
+            <p className="text-3xl font-black text-[#FFA958] leading-none mb-1.5">{pct}%</p>
+            <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_pct}</p>
           </div>
-          <p className="text-sm font-bold text-black/70 leading-snug mb-1">
-            of your ward shares this concern
+          <div className="flex-1 bg-white/70 backdrop-blur rounded-2xl border border-black/5 p-4 shadow-sm flex flex-col justify-center">
+            <p className="text-3xl font-black text-black/80 leading-none mb-1.5">{similarCount}</p>
+            <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_similar}</p>
+          </div>
+        </div>
+
+        {/* Future Impact Card */}
+        <div className="bg-gradient-to-br from-[#FFA958]/20 to-white/60 backdrop-blur rounded-2xl border border-[#FFA958]/30 p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-[#d97706]" />
+            <p className="text-xs font-bold text-[#d97706] uppercase tracking-wider">{t.community_impact_title}</p>
+          </div>
+          <p className="text-xs font-semibold text-black/70 leading-relaxed">
+            {t.community_impact_desc}
           </p>
-          <p className="text-xs text-black/40">
-            You're part of a {pct > 30 ? "major" : "growing"} community priority
-          </p>
-
-          {/* Enhanced bar chart */}
-          <div className="flex gap-1.5 items-end justify-center mt-5 h-12">
-            {[0.3, 0.55, 0.75, 0.65, pct / 100, 0.5, 0.4].map((h, i) => (
-              <div key={i} className="flex flex-col items-center gap-1">
-                <div
-                  className={`w-4 rounded-md transition-all shadow-sm ${i === 4 ? "bg-gradient-to-t from-[#FFA958] to-[#f97316]" : "bg-[#FFA958]/20"}`}
-                  style={{ height: `${h * 48}px` }}
-                />
-                {i === 4 && (
-                  <span className="text-[8px] font-bold text-[#FFA958]">You</span>
-                )}
-              </div>
-            ))}
-          </div>
         </div>
+
+        {/* Primary CTA */}
+        <button
+          onClick={onTrack}
+          className="w-full flex items-center justify-center gap-2 py-4 mt-2 rounded-2xl bg-[#FFA958] text-black font-extrabold text-sm shadow-lg shadow-[#FFA958]/30 active:scale-95 transition-all"
+        >
+          {t.track_complaint}
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
-
-      {/* Mission card */}
-      <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 p-4 mb-4 shadow-sm">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-[#FFA958]/15 flex items-center justify-center text-xl">
-            {emoji}
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-black/50 uppercase tracking-wider">Contributing to</p>
-            <p className="font-extrabold text-black text-sm">{missionName}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-black/3 rounded-lg p-2.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Clock className="w-3 h-3 text-black/40" />
-              <span className="text-[9px] text-black/40 uppercase tracking-wider">Time spoken</span>
-            </div>
-            <p className="font-bold text-sm text-black">~2 minutes</p>
-          </div>
-          <div className="bg-[#FFA958]/10 rounded-lg p-2.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Users className="w-3 h-3 text-[#FFA958]" />
-              <span className="text-[9px] text-[#FFA958] uppercase tracking-wider">Impact</span>
-            </div>
-            <p className="font-bold text-sm text-[#FFA958]">{timeImpact}h/year</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Impact preview */}
-      <div className="bg-gradient-to-br from-blue-50 to-transparent border border-blue-200/50 rounded-2xl p-4 mb-5">
-        <div className="flex items-center gap-2 mb-2">
-          <TrendingUp className="w-4 h-4 text-blue-600" />
-          <p className="text-xs font-bold text-blue-700">Potential Impact</p>
-        </div>
-        <p className="text-xs text-black/60 leading-relaxed">
-          When resolved, this could save residents an estimated{" "}
-          <span className="font-bold text-[#FFA958]">{timeImpact} hours per year</span>{" "}
-          through better infrastructure, reduced delays, and improved daily quality of life.
-        </p>
-      </div>
-
-      <button
-        onClick={onTrack}
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#FFA958] text-black font-bold text-sm shadow-lg shadow-[#FFA958]/30 active:scale-95 transition-all mt-auto"
-      >
-        {t.track_complaint}
-        <ChevronRight className="w-4 h-4" />
-      </button>
     </div>
   );
 }
@@ -1175,6 +1237,20 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
   // Whether we're in a flow that should hide the nav (post-submit reflection steps)
   const inReflectionFlow = ["ack", "step_context", "step_past", "step_vision", "output", "community"].includes(screen);
 
+  let systemState: SystemState = 'idle';
+  if (tab === 'report') {
+    if (screen === 'home') systemState = 'idle';
+    else if (screen === 'ack' || screen.startsWith('step_')) systemState = 'submitting';
+    else if (screen === 'output' || screen === 'community') systemState = 'clustering';
+    else if (screen === 'tracking') systemState = 'response';
+  } else if (tab === 'updates') {
+    systemState = 'response';
+  } else if (tab === 'community') {
+    systemState = 'clustering';
+  } else if (tab === 'profile') {
+    systemState = 'idle';
+  }
+
   return (
     <div className="size-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
       {/* Phone mockup */}
@@ -1213,6 +1289,12 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
         {/* Screen content */}
         <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
+          <CivicStructure 
+            complaints={complaints} 
+            systemState={systemState} 
+            activeClusterId={submittedComplaint?.cluster_id ?? recentCluster} 
+            recentlyAddedId={submittedId}
+          />
           {/* Report tab: existing screen flow */}
           {tab === "report" && (
             <>
@@ -1239,6 +1321,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                   value={contextInput} onChange={setContextInput}
                   onNext={() => setScreen("step_past")}
                   onSkip={() => setScreen("step_past")}
+                  chips={[t.chip_commute, t.chip_harder, t.chip_safety, t.chip_others]}
                   t={t}
                 />
               )}
