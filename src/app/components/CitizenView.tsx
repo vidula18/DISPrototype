@@ -623,11 +623,11 @@ function CommunityScreen({ complaint, onTrack, t }: {
         <p className="text-sm font-medium text-black/60 mt-2">{t.community_sub}</p>
       </div>
 
-      {/* Spacer for CivicStructure to shine through as hero */}
-      <div className="flex-1 min-h-[200px] pointer-events-none" />
+        {/* Massive spacer for CivicStructure to shine through as central visual anchor without overlap */}
+      <div className="flex-1 min-h-[350px] pointer-events-none" />
 
-      {/* Stats & Impact Section */}
-      <div className="flex flex-col gap-3 mt-auto">
+      {/* Stats Section */}
+      <div className="flex flex-col gap-3 mt-auto shrink-0">
         
         {/* Compact Stats Row */}
         <div className="flex gap-3">
@@ -639,17 +639,6 @@ function CommunityScreen({ complaint, onTrack, t }: {
             <p className="text-3xl font-black text-black/80 leading-none mb-1.5">{similarCount}</p>
             <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_similar}</p>
           </div>
-        </div>
-
-        {/* Future Impact Card */}
-        <div className="bg-gradient-to-br from-[#FFA958]/20 to-white/60 backdrop-blur rounded-2xl border border-[#FFA958]/30 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-[#d97706]" />
-            <p className="text-xs font-bold text-[#d97706] uppercase tracking-wider">{t.community_impact_title}</p>
-          </div>
-          <p className="text-xs font-semibold text-black/70 leading-relaxed">
-            {t.community_impact_desc}
-          </p>
         </div>
 
         {/* Primary CTA */}
@@ -1289,7 +1278,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
         {/* Screen content */}
         <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
-          {(screen === "community" || screen === "tracking") && (
+          {screen === "community" && (
             <CivicStructure 
               complaints={complaints} 
               systemState={systemState} 

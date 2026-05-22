@@ -11,7 +11,6 @@ interface CivicStructureProps {
   recentlyAddedId?: string | null;
 }
 
-// Map each cluster to a specific color from the reference
 const CLUSTER_COLORS: Record<string, string> = {
   "Road Issues": "#F7A072",      // Peach/Orange
   "Sanitation": "#A67C74",       // Earthy Brown
@@ -20,14 +19,10 @@ const CLUSTER_COLORS: Record<string, string> = {
 };
 
 const DEFAULT_COLOR = "#D1C8C1";
-
-// Grid configuration for isometric layout
 const CUBE_SIZE = 32;
 const SPACING = CUBE_SIZE;
 
-// Calculate deterministic grid positions that look like the reference clusters
 function getGridPosition(clusterId: string, index: number, state: SystemState, activeClusterId?: string | null) {
-  // Base coordinates for different clusters to form separate islands initially
   const centers: Record<string, { x: number, y: number }> = {
     "Road Issues": { x: 2, y: 2 },
     "Sanitation": { x: -3, y: 4 },
@@ -36,18 +31,13 @@ function getGridPosition(clusterId: string, index: number, state: SystemState, a
   };
 
   const center = centers[clusterId] || { x: 0, y: 0 };
-  
-  // Create a structured but organic looking cluster
-  // We'll use a spiral pattern on a grid
   let dx = 0, dy = 0, dz = 0;
   
   if (index > 0) {
-    // Math to place cubes in a layered grid pattern (x, y, z steps)
     const layer = Math.floor(Math.pow(index, 1/3));
     const remainder = index - Math.pow(layer, 3);
     const side = Math.floor(Math.sqrt(remainder));
     
-    // Simple pseudo-random but deterministic placement around center
     const hash = (index * 137) % 5;
     if (hash === 0) { dx = layer; dy = side; }
     else if (hash === 1) { dx = -side; dy = layer; }
@@ -60,13 +50,10 @@ function getGridPosition(clusterId: string, index: number, state: SystemState, a
   let y = (center.y + dy) * SPACING;
   let z = dz * CUBE_SIZE;
 
-  // Apply state effects
   if (state === 'clustering') {
-    // Pull everything slightly tighter towards 0,0
     x = x * 0.85;
     y = y * 0.85;
   } else if (state === 'negotiation' && activeClusterId === clusterId) {
-    // Separate one part
     if (index % 3 === 0) {
       x += SPACING * 1.5;
       y += SPACING * 1.5;
@@ -79,7 +66,7 @@ function getGridPosition(clusterId: string, index: number, state: SystemState, a
   return { x, y, z };
 }
 
-// True 3D Cube Component
+// True 6-Face 3D Solid Cube
 const Cube = ({ x, y, z, color, isNew, delay = 0, systemState }: { x: number, y: number, z: number, color: string, isNew: boolean, delay?: number, systemState: SystemState }) => {
   const size = CUBE_SIZE;
   
@@ -102,46 +89,76 @@ const Cube = ({ x, y, z, color, isNew, delay = 0, systemState }: { x: number, y:
         type: "spring",
         stiffness: isNew ? 120 : 60,
         damping: isNew ? 15 : 20,
-        delay: isNew ? 0.2 : delay, // Stagger intro
+        delay: isNew ? 0.2 : delay,
       }}
       style={{
         width: size,
         height: size,
         transformStyle: 'preserve-3d',
-        // Center the cube on its coordinate
         marginLeft: -size / 2,
         marginTop: -size / 2,
       }}
     >
-      {/* Top Face - Lightest (Light source from top) */}
+      {/* Top Face (Z+) */}
       <div 
         className="absolute inset-0"
         style={{ 
           background: color,
           transform: `translateZ(${size}px)`,
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '0.5px solid rgba(255,255,255,0.1)',
+          // No filter needed for top face (light source from above)
         }} 
       />
       
-      {/* Right Face - Darkest (Shadow) */}
+      {/* Bottom Face (Z-) */}
       <div 
         className="absolute inset-0"
         style={{ 
           background: color,
-          filter: 'brightness(0.65)',
-          transform: `translateX(${size/2}px) translateZ(${size/2}px) rotateY(90deg)`,
-          border: '1px solid rgba(0,0,0,0.05)',
+          filter: 'brightness(0.4)', // Darkest
+          transform: `translateZ(0px) rotateX(180deg)`,
         }} 
       />
-      
-      {/* Front/Left Face - Medium */}
+
+      {/* Front Face (Y+) */}
       <div 
         className="absolute inset-0"
         style={{ 
           background: color,
-          filter: 'brightness(0.85)',
+          filter: 'brightness(0.85)', // Slightly shaded
           transform: `translateY(${size/2}px) translateZ(${size/2}px) rotateX(-90deg)`,
-          border: '1px solid rgba(0,0,0,0.05)',
+          border: '0.5px solid rgba(0,0,0,0.05)',
+        }} 
+      />
+      
+      {/* Back Face (Y-) */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: color,
+          filter: 'brightness(0.6)', // Shaded
+          transform: `translateY(${-size/2}px) translateZ(${size/2}px) rotateX(90deg)`,
+        }} 
+      />
+      
+      {/* Right Face (X+) */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: color,
+          filter: 'brightness(0.7)', // Shaded side
+          transform: `translateX(${size/2}px) translateZ(${size/2}px) rotateY(90deg)`,
+          border: '0.5px solid rgba(0,0,0,0.05)',
+        }} 
+      />
+
+      {/* Left Face (X-) */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: color,
+          filter: 'brightness(0.9)', // Light side
+          transform: `translateX(${-size/2}px) translateZ(${size/2}px) rotateY(-90deg)`,
         }} 
       />
     </motion.div>
@@ -168,7 +185,6 @@ export function CivicStructure({
         color: CLUSTER_COLORS[c.cluster_id] || DEFAULT_COLOR,
         ...pos,
         isNew: c.id === recentlyAddedId,
-        // Sort index for stagger
         delay: (index * 0.05) + (Math.random() * 0.1)
       };
     });
@@ -191,14 +207,14 @@ export function CivicStructure({
         initial={{ rotateX: 60, rotateZ: -45, scale: 0.9, y: 50 }}
         animate={{ 
           rotateX: 60, 
-          rotateZ: systemState === 'clustering' ? -35 : -45, // Subtle rotation on cluster
+          rotateZ: systemState === 'clustering' ? -35 : -45,
           scale: 1,
           y: 0
         }}
         transition={{ duration: 2, ease: "easeOut" }}
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* Sort units by Z and Y to help browser rendering depth (though preserve-3d should handle it) */}
+        {/* Sort units by Z and Y to help browser rendering depth */}
         {units
           .sort((a, b) => (a.z + a.x + a.y) - (b.z + b.x + b.y))
           .map((unit) => (
