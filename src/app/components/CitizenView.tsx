@@ -1,0 +1,1344 @@
+import { useState, useRef, useEffect } from "react";
+import {
+  Send, MapPin, ArrowLeft, Users, Clock, CheckCircle2,
+  CircleDot, Loader2, AlertCircle, Mic, ChevronRight, SkipForward,
+  FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye,
+} from "lucide-react";
+import type { Complaint, ComplaintStatus, StructuredOutput } from "../App";
+import { getCluster, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
+
+// ─── i18n ────────────────────────────────────────────────────────────────────
+
+type Lang = "en" | "hi";
+
+const T: Record<Lang, Record<string, string>> = {
+  en: {
+    welcome: "Welcome back",
+    greeting: "Hello Rajesh,",
+    hero: "What would make this city work better for you?",
+    tagline: "Your voice shapes the city's priorities",
+    placeholder: "Describe your concern… (e.g. pothole on MG Road)",
+    location_ph: "Location (optional)",
+    cluster_preview: "Will be filed under:",
+    submit: "Submit Complaint",
+    recent_hint: "Others have reported similar",
+    issues: "issues. Your complaint will be clustered.",
+    // Ack screen
+    ack_heading: "We've received your complaint",
+    ack_conveyed: "We have conveyed this to",
+    ack_question: "If you have 2 more minutes, can you tell us more about it?",
+    ack_continue: "Yes, tell us more",
+    ack_skip: "Skip for now",
+    // Reflection steps
+    step_of: "of",
+    step_context_q: "Tell us more about what's happening.",
+    step_context_ph: "This affects my daily commute…",
+    step_past_q: "Tell me more about what was different before.",
+    step_past_ph: "Earlier this stretch was well-maintained…",
+    step_vision_q: "What do you think can be done about it?",
+    step_vision_ph: "The roads should be properly repaired, not just patched…",
+    step_vision_note: "This is the most important part",
+    voice_hint: "Tap mic to record (simulated)",
+    next: "Next →",
+    skip_step: "Skip",
+    // Output card
+    your_vision: "Your Vision",
+    vision_issue: "Issue",
+    vision_why: "Why it matters",
+    vision_outcome: "Desired outcome",
+    vision_note: "Submitted to municipal system · Now visible to officers",
+    continue_to_community: "See community impact →",
+    // Community
+    community_heading: "Your Community",
+    community_stat_suffix: "of people in your ward share your vision.",
+    community_cluster: "Cluster",
+    community_time: "You spoke for ~2 minutes.",
+    community_impact: "When addressed, this could save residents time, improve safety, and reduce daily stress.",
+    track_complaint: "Track my complaint",
+    // Tracking
+    tracking_title: "Complaint Tracking",
+    tracking_sub: "Live updates from municipal system",
+    cluster_label: "Cluster",
+    similar_label: "Similar complaints in your area",
+    first_reporter: "You're the first to report this type of issue!",
+    submit_another: "Submit Another Complaint",
+    // Status
+    awaiting: "Awaiting assignment",
+    within_24: "Municipal team will review and assign within 24 hours",
+    live_status: "Live Status",
+    assigned_to: "Assigned To",
+  },
+  hi: {
+    welcome: "वापसी पर स्वागत",
+    greeting: "नमस्ते राजेश,",
+    hero: "आप अपने शहर को बेहतर बनाने के लिए क्या चाहते हैं?",
+    tagline: "आपकी आवाज़ शहर की प्राथमिकताएं तय करती है",
+    placeholder: "अपनी समस्या बताएं… (जैसे MG रोड पर गड्ढा)",
+    location_ph: "स्थान (वैकल्पिक)",
+    cluster_preview: "इसमें दर्ज होगा:",
+    submit: "शिकायत दर्ज करें",
+    recent_hint: "अन्य लोगों ने भी इसी तरह की",
+    issues: "समस्याएं रिपोर्ट की हैं।",
+    ack_heading: "आपकी शिकायत मिल गई",
+    ack_conveyed: "हमने यह बात पहुंचाई है",
+    ack_question: "क्या आप 2 मिनट में और बता सकते हैं?",
+    ack_continue: "हाँ, और बताएं",
+    ack_skip: "अभी नहीं",
+    step_of: "में से",
+    step_context_q: "आगे बताएं, क्या हो रहा है?",
+    step_context_ph: "यह मेरी रोज़ की यात्रा को प्रभावित करता है…",
+    step_past_q: "पहले कैसा था? क्या बदला?",
+    step_past_ph: "पहले यह सड़क ठीक रहती थी…",
+    step_vision_q: "आपके अनुसार इसका हल क्या हो सकता है?",
+    step_vision_ph: "सड़क की ठीक से मरम्मत होनी चाहिए…",
+    step_vision_note: "यह सबसे महत्वपूर्ण हिस्सा है",
+    voice_hint: "रिकॉर्ड करने के लिए माइक दबाएं (सिमुलेटेड)",
+    next: "अगला →",
+    skip_step: "छोड़ें",
+    your_vision: "आपकी दृष्टि",
+    vision_issue: "समस्या",
+    vision_why: "यह क्यों मायने रखती है",
+    vision_outcome: "वांछित परिणाम",
+    vision_note: "नगर पालिका प्रणाली को भेजा गया",
+    continue_to_community: "सामुदायिक प्रभाव देखें →",
+    community_heading: "आपका समुदाय",
+    community_stat_suffix: "लोग आपके वार्ड में यही सोचते हैं।",
+    community_cluster: "क्लस्टर",
+    community_time: "आपने ~2 मिनट बात की।",
+    community_impact: "इस मुद्दे के हल होने पर निवासियों का समय बचेगा और सुरक्षा बढ़ेगी।",
+    track_complaint: "शिकायत ट्रैक करें",
+    tracking_title: "शिकायत ट्रैकिंग",
+    tracking_sub: "नगर पालिका से लाइव अपडेट",
+    cluster_label: "क्लस्टर",
+    similar_label: "आपके क्षेत्र में समान शिकायतें",
+    first_reporter: "आप इस प्रकार की पहली शिकायत दर्ज कर रहे हैं!",
+    submit_another: "एक और दर्ज करें",
+    awaiting: "असाइनमेंट की प्रतीक्षा",
+    within_24: "नगर पालिका 24 घंटे में समीक्षा करेगी",
+    live_status: "लाइव स्थिति",
+    assigned_to: "सौंपा गया",
+  },
+};
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Screen =
+  | "home"
+  | "ack"
+  | "step_context"
+  | "step_past"
+  | "step_vision"
+  | "output"
+  | "community"
+  | "tracking";
+
+type Tab = "report" | "updates" | "community" | "profile";
+
+interface Props {
+  complaints: Complaint[];
+  onAddComplaint: (text: string, location: string) => Complaint;
+  onUpdateComplaint: (id: string, updates: Partial<Complaint>) => void;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg: string; Icon: typeof CircleDot }> = {
+  Open: { label: "Open", color: "text-amber-700", bg: "bg-amber-50 border-amber-200", Icon: AlertCircle },
+  Assigned: { label: "Assigned", color: "text-blue-700", bg: "bg-blue-50 border-blue-200", Icon: CircleDot },
+  "In Progress": { label: "In Progress", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", Icon: Loader2 },
+  Resolved: { label: "Resolved", color: "text-green-700", bg: "bg-green-50 border-green-200", Icon: CheckCircle2 },
+};
+
+const CLUSTER_EMOJI: Record<string, string> = {
+  "Road Issues": "🛣️",
+  "Sanitation": "🗑️",
+  "Water Supply": "💧",
+  "General Issues": "📋",
+};
+
+// ─── Sub-screens (Report tab) ─────────────────────────────────────────────────
+
+function HomeScreen({
+  inputText, location, onInput, onLocation, onSubmit, recentCluster, lang, t,
+}: {
+  inputText: string; location: string;
+  onInput: (v: string) => void; onLocation: (v: string) => void;
+  onSubmit: () => void; recentCluster: string | null;
+  lang: Lang; t: Record<string, string>;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const canSubmit = inputText.trim().length > 3;
+  const preview = inputText.trim() ? getCluster(inputText) : null;
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + "px";
+    }
+  }, [inputText]);
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-7 pt-9 pb-3">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-[#FFA958] flex items-center justify-center shrink-0">
+            <span className="text-sm font-extrabold text-black">R</span>
+          </div>
+          <div>
+            <p className="text-xs text-black/40 font-medium">{t.welcome}</p>
+            <p className="font-bold text-black leading-none">{t.greeting}</p>
+          </div>
+        </div>
+        <h2 className="font-extrabold text-[#FFA757] leading-tight" style={{ fontSize: 24 }}>
+          {t.hero}
+        </h2>
+        <p className="text-xs text-black/35 mt-1">{t.tagline}</p>
+      </div>
+
+      <div className="absolute left-0 right-0 top-48 flex justify-center pointer-events-none">
+        <div className="w-72 h-72 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #FFA958 0%, transparent 70%)", filter: "blur(40px)" }} />
+      </div>
+
+      {preview && (
+        <div className="mx-6 mb-2.5">
+          <div className="flex items-center gap-1.5 bg-[#FFA958]/10 border border-[#FFA958]/30 rounded-full px-3 py-1.5">
+            <span className="text-sm">{CLUSTER_EMOJI[preview]}</span>
+            <span className="text-xs font-semibold text-[#FFA958]">{t.cluster_preview} {preview}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 px-6 flex flex-col gap-2.5 overflow-y-auto">
+        <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 shadow-sm overflow-hidden">
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={(e) => onInput(e.target.value)}
+            placeholder={t.placeholder}
+            className="w-full px-4 pt-3 pb-2 text-sm text-black bg-transparent resize-none outline-none placeholder:text-black/30 leading-relaxed"
+            style={{ minHeight: 80, maxHeight: 120 }}
+          />
+          <div className="flex items-center gap-2 px-4 pb-3 pt-1 border-t border-black/5">
+            <MapPin className="w-3.5 h-3.5 text-black/30 shrink-0" />
+            <input
+              value={location}
+              onChange={(e) => onLocation(e.target.value)}
+              placeholder={t.location_ph}
+              className="flex-1 text-xs text-black/50 bg-transparent outline-none placeholder:text-black/25"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={onSubmit}
+          disabled={!canSubmit}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+            canSubmit
+              ? "bg-[#FFA958] text-black shadow-lg shadow-[#FFA958]/30 active:scale-95"
+              : "bg-black/8 text-black/30"
+          }`}
+        >
+          <Send className="w-4 h-4" />
+          {t.submit}
+        </button>
+
+        {recentCluster && (
+          <div className="bg-black/3 rounded-2xl p-3">
+            <p className="text-xs text-black/50 leading-relaxed">
+              {CLUSTER_EMOJI[recentCluster]} {t.recent_hint}{" "}
+              <span className="font-semibold">{recentCluster.toLowerCase()}</span> {t.issues}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="px-6 py-3 text-center">
+        <p className="text-[10px] text-black/25">
+          {lang === "en" ? "Your complaint is private · Ward 12 · Bangalore" : "आपकी शिकायत निजी है · वार्ड 12 · बैंगलोर"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AckScreen({ complaint, onContinue, onSkip, t }: {
+  complaint: Complaint; onContinue: () => void; onSkip: () => void;
+  t: Record<string, string>;
+}) {
+  const dept = CLUSTER_DEPT[complaint.cluster_id] ?? "the relevant department";
+  return (
+    <div className="flex flex-col h-full px-7 pt-10 pb-6">
+      <div className="flex flex-col gap-3 mb-8">
+        <div className="w-12 h-12 rounded-2xl bg-[#FFA958] flex items-center justify-center">
+          <CheckCircle2 className="w-6 h-6 text-black" />
+        </div>
+        <div>
+          <p className="font-extrabold text-black text-xl leading-tight">{t.ack_heading}</p>
+          <p className="text-sm text-black/50 mt-1">
+            {t.ack_conveyed}{" "}
+            <span className="font-bold text-[#FFA757]">{dept}.</span>
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-[#FFA958] rounded-2xl p-4 mb-6">
+        <p className="text-sm font-semibold text-black leading-snug line-clamp-3">
+          {complaint.text_input}
+        </p>
+        <div className="flex items-center gap-1.5 mt-2 text-black/50 text-xs">
+          <MapPin className="w-3 h-3" />{complaint.location}
+        </div>
+      </div>
+
+      <div className="absolute left-0 right-0 top-1/2 flex justify-center pointer-events-none -z-0">
+        <div className="w-64 h-64 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #FFA958 0%, transparent 70%)", filter: "blur(50px)" }} />
+      </div>
+
+      <div className="flex-1 flex flex-col justify-end gap-3 relative z-10">
+        <div className="bg-white/70 backdrop-blur rounded-2xl border border-black/8 p-4">
+          <p className="font-extrabold text-[#FFA757] text-lg leading-snug">
+            {t.ack_question}
+          </p>
+          <p className="text-xs text-black/40 mt-1">
+            {t["step_of"] === "of"
+              ? "3 quick questions · takes ~2 minutes · completely optional"
+              : "3 त्वरित प्रश्न · लगभग 2 मिनट · पूरी तरह वैकल्पिक"}
+          </p>
+        </div>
+
+        <button
+          onClick={onContinue}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#FFA958] text-black font-bold text-sm shadow-lg shadow-[#FFA958]/30 active:scale-95 transition-all"
+        >
+          {t.ack_continue}
+          <ChevronRight className="w-4 h-4" />
+        </button>
+        <button
+          onClick={onSkip}
+          className="w-full py-2.5 rounded-2xl text-sm font-semibold text-black/40 hover:text-black/60 transition-colors"
+        >
+          {t.ack_skip}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ReflectionCard({
+  stepNum, totalSteps, question, placeholder, value, onChange,
+  onNext, onSkip, isVision, t,
+}: {
+  stepNum: number; totalSteps: number;
+  question: string; placeholder: string;
+  value: string; onChange: (v: string) => void;
+  onNext: () => void; onSkip: () => void;
+  isVision?: boolean;
+  t: Record<string, string>;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [micActive, setMicActive] = useState(false);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + "px";
+    }
+  }, [value]);
+
+  const handleMic = () => {
+    setMicActive(true);
+    setTimeout(() => setMicActive(false), 1500);
+  };
+
+  return (
+    <div className="flex flex-col h-full px-6 pt-8 pb-6">
+      <div className="flex items-center gap-2 mb-6">
+        {Array.from({ length: totalSteps }).map((_, i) => (
+          <div
+            key={i}
+            className={`h-1 flex-1 rounded-full transition-all ${
+              i < stepNum ? "bg-[#FFA958]" : i === stepNum - 1 ? "bg-[#FFA958]" : "bg-black/10"
+            }`}
+          />
+        ))}
+        <span className="text-[11px] text-black/40 ml-1 shrink-0">{stepNum} {t.step_of} {totalSteps}</span>
+      </div>
+
+      <div className="mb-5">
+        {isVision && (
+          <div className="inline-flex items-center gap-1.5 bg-[#FFA958]/15 text-[#FFA758] text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 uppercase tracking-wider">
+            ✦ {t.step_vision_note}
+          </div>
+        )}
+        <p className="font-extrabold text-[#FFA757] text-xl leading-snug">{question}</p>
+      </div>
+
+      <div className="absolute left-0 right-0 top-1/2 flex justify-center pointer-events-none -z-0">
+        <div className="w-60 h-60 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #FFA958 0%, transparent 70%)", filter: "blur(50px)" }} />
+      </div>
+
+      <div className="flex-1 flex flex-col gap-3 relative z-10">
+        <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 shadow-sm overflow-hidden">
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-full px-4 pt-3 pb-2 text-sm text-black bg-transparent resize-none outline-none placeholder:text-black/30 leading-relaxed"
+            style={{ minHeight: 100, maxHeight: 150 }}
+          />
+          <div className="flex items-center gap-2 px-4 pb-3 pt-1 border-t border-black/5">
+            <button
+              onClick={handleMic}
+              className={`flex items-center gap-1.5 text-xs font-medium transition-all ${
+                micActive ? "text-[#FFA958]" : "text-black/30 hover:text-black/50"
+              }`}
+            >
+              <Mic className={`w-3.5 h-3.5 ${micActive ? "animate-pulse" : ""}`} />
+              {micActive ? "Listening…" : t.voice_hint}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mt-auto">
+          <button
+            onClick={onSkip}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-semibold text-black/40 hover:text-black/60 border border-black/10 transition-colors"
+          >
+            <SkipForward className="w-3.5 h-3.5" />
+            {t.skip_step}
+          </button>
+          <button
+            onClick={onNext}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#FFA958] text-black font-bold text-sm shadow-md shadow-[#FFA958]/25 active:scale-95 transition-all"
+          >
+            {t.next}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OutputCard({ output, onNext, t }: {
+  output: StructuredOutput; onNext: () => void; t: Record<string, string>;
+}) {
+  return (
+    <div className="flex flex-col h-full px-6 pt-8 pb-6">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFA958] to-[#f97316] flex items-center justify-center shadow-lg">
+          <span className="text-lg">✦</span>
+        </div>
+        <div>
+          <p className="font-extrabold text-black text-lg leading-none">{t.your_vision}</p>
+          <p className="text-xs text-black/40 mt-0.5">Structured for civic action</p>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200 shadow-md overflow-hidden mb-4">
+        <div className="border-b border-gray-100 p-4 bg-white">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t.vision_issue}</p>
+          <p className="text-sm font-bold text-gray-900 leading-snug">{output.issue}</p>
+        </div>
+        <div className="border-b border-gray-100 p-4">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t.vision_why}</p>
+          <div className="flex items-start gap-2">
+            <div className="w-1 h-full bg-blue-400 rounded-full mt-1" />
+            <p className="text-sm text-gray-700 leading-relaxed flex-1">{output.why_it_matters}</p>
+          </div>
+        </div>
+        <div className="p-4 bg-gradient-to-br from-[#FFA958]/10 to-[#FFA958]/5">
+          <p className="text-[10px] font-semibold text-[#FFA958] uppercase tracking-wider mb-1.5">
+            {t.vision_outcome}
+          </p>
+          <div className="flex items-start gap-2">
+            <span className="text-base shrink-0">→</span>
+            <p className="text-sm font-bold text-gray-900 leading-relaxed flex-1">{output.desired_outcome}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Status badges */}
+      <div className="flex flex-col gap-2 mb-5">
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+          <CheckCircle2 className="w-4 h-4 text-green-600" />
+          <span className="text-xs font-semibold text-green-700">Submitted to municipal system</span>
+        </div>
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+          <Eye className="w-4 h-4 text-blue-600" />
+          <span className="text-xs font-semibold text-blue-700">Now visible to civic officers</span>
+        </div>
+      </div>
+
+      <button
+        onClick={onNext}
+        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#FFA958] text-black font-bold text-sm shadow-lg shadow-[#FFA958]/30 active:scale-95 transition-all mt-auto"
+      >
+        {t.continue_to_community}
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function CommunityScreen({ complaint, onTrack, t }: {
+  complaint: Complaint; onTrack: () => void; t: Record<string, string>;
+}) {
+  const pct = CLUSTER_COMMUNITY_PCT[complaint.cluster_id] ?? 18;
+  const emoji = CLUSTER_EMOJI[complaint.cluster_id] ?? "📋";
+
+  // Map to civic mission
+  const missionNames: Record<string, string> = {
+    "Road Issues": "Better & Free Mobility",
+    "Sanitation": "Cleaner Neighborhoods",
+    "Water Supply": "Healthy Air & Water",
+    "General Issues": "Reliable Infrastructure",
+  };
+  const missionName = missionNames[complaint.cluster_id] || complaint.cluster_id;
+
+  // Calculate time saved impact
+  const timeImpact = complaint.cluster_id === "Road Issues" ? 22 :
+                     complaint.cluster_id === "Sanitation" ? 15 :
+                     complaint.cluster_id === "Water Supply" ? 28 : 12;
+
+  return (
+    <div className="flex flex-col h-full px-6 pt-8 pb-6">
+      <div className="mb-6">
+        <p className="font-extrabold text-black text-xl">{t.community_heading}</p>
+        <p className="text-xs text-black/40 mt-1">Your voice joins a movement for change</p>
+      </div>
+
+      {/* Main alignment card */}
+      <div className="bg-gradient-to-br from-[#FFA958]/15 via-[#FFA958]/8 to-[#FFA958]/5 border border-[#FFA958]/30 rounded-2xl p-6 mb-4 text-center relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-[#FFA958]/20 rounded-full blur-3xl" />
+        <div className="relative">
+          <div className="inline-flex items-baseline gap-2 mb-2">
+            <span className="font-extrabold text-[#FFA958]" style={{ fontSize: 56, lineHeight: 1 }}>{pct}%</span>
+          </div>
+          <p className="text-sm font-bold text-black/70 leading-snug mb-1">
+            of your ward shares this concern
+          </p>
+          <p className="text-xs text-black/40">
+            You're part of a {pct > 30 ? "major" : "growing"} community priority
+          </p>
+
+          {/* Enhanced bar chart */}
+          <div className="flex gap-1.5 items-end justify-center mt-5 h-12">
+            {[0.3, 0.55, 0.75, 0.65, pct / 100, 0.5, 0.4].map((h, i) => (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div
+                  className={`w-4 rounded-md transition-all shadow-sm ${i === 4 ? "bg-gradient-to-t from-[#FFA958] to-[#f97316]" : "bg-[#FFA958]/20"}`}
+                  style={{ height: `${h * 48}px` }}
+                />
+                {i === 4 && (
+                  <span className="text-[8px] font-bold text-[#FFA958]">You</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mission card */}
+      <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 p-4 mb-4 shadow-sm">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-xl bg-[#FFA958]/15 flex items-center justify-center text-xl">
+            {emoji}
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-black/50 uppercase tracking-wider">Contributing to</p>
+            <p className="font-extrabold text-black text-sm">{missionName}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-black/3 rounded-lg p-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Clock className="w-3 h-3 text-black/40" />
+              <span className="text-[9px] text-black/40 uppercase tracking-wider">Time spoken</span>
+            </div>
+            <p className="font-bold text-sm text-black">~2 minutes</p>
+          </div>
+          <div className="bg-[#FFA958]/10 rounded-lg p-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Users className="w-3 h-3 text-[#FFA958]" />
+              <span className="text-[9px] text-[#FFA958] uppercase tracking-wider">Impact</span>
+            </div>
+            <p className="font-bold text-sm text-[#FFA958]">{timeImpact}h/year</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Impact preview */}
+      <div className="bg-gradient-to-br from-blue-50 to-transparent border border-blue-200/50 rounded-2xl p-4 mb-5">
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingUp className="w-4 h-4 text-blue-600" />
+          <p className="text-xs font-bold text-blue-700">Potential Impact</p>
+        </div>
+        <p className="text-xs text-black/60 leading-relaxed">
+          When resolved, this could save residents an estimated{" "}
+          <span className="font-bold text-[#FFA958]">{timeImpact} hours per year</span>{" "}
+          through better infrastructure, reduced delays, and improved daily quality of life.
+        </p>
+      </div>
+
+      <button
+        onClick={onTrack}
+        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#FFA958] text-black font-bold text-sm shadow-lg shadow-[#FFA958]/30 active:scale-95 transition-all mt-auto"
+      >
+        {t.track_complaint}
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
+  complaint: Complaint; clusterComplaints: Complaint[]; onBack: () => void;
+  t: Record<string, string>;
+}) {
+  const statusCfg = STATUS_CONFIG[complaint.status];
+  const { Icon } = statusCfg;
+  const others = clusterComplaints.filter((c) => c.id !== complaint.id);
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-3 px-5 pt-8 pb-4">
+        <button onClick={onBack} className="w-8 h-8 rounded-full bg-black/8 flex items-center justify-center">
+          <ArrowLeft className="w-4 h-4 text-black" />
+        </button>
+        <div>
+          <p className="font-extrabold text-black" style={{ fontSize: 15 }}>{t.tracking_title}</p>
+          <p className="text-xs text-black/40">{t.tracking_sub}</p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 pb-6 flex flex-col gap-4">
+        <div className="bg-[#FFA958] rounded-2xl p-4 text-black">
+          <p className="font-bold text-sm leading-snug">{complaint.text_input}</p>
+          <div className="flex items-center gap-2 text-xs text-black/60 mt-2">
+            <MapPin className="w-3 h-3" />
+            <span>{complaint.location}</span>
+            <span>·</span>
+            <Clock className="w-3 h-3" />
+            <span>{timeAgo(complaint.timestamp)}</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-black/8 p-4 shadow-sm">
+          <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-3">{t.live_status}</p>
+          <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 ${statusCfg.bg}`}>
+            <Icon className={`w-4 h-4 shrink-0 ${statusCfg.color} ${complaint.status === "In Progress" ? "animate-spin" : ""}`} />
+            <span className={`font-bold text-sm ${statusCfg.color}`}>{statusCfg.label}</span>
+            {complaint.status === "Open" && (
+              <span className="ml-auto text-[10px] text-amber-600">{t.awaiting}</span>
+            )}
+          </div>
+
+          {complaint.assigned_department ? (
+            <div className="mt-3 pt-3 border-t border-black/5">
+              <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-2">{t.assigned_to}</p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#FFA958]/20 flex items-center justify-center shrink-0">
+                  <span className="text-sm">🏛️</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-black">{complaint.assigned_department}</p>
+                  {complaint.assigned_officer && (
+                    <p className="text-xs text-black/50">{complaint.assigned_officer}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-black/40 mt-2 pt-2 border-t border-black/5">{t.within_24}</p>
+          )}
+        </div>
+
+        {complaint.structured_output && (
+          <div className="bg-white rounded-2xl border border-[#FFA958]/30 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm">✦</span>
+              <p className="text-[10px] font-semibold text-[#FFA958] uppercase tracking-wider">{t.your_vision}</p>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <div>
+                <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{t.vision_why}</p>
+                <p className="text-xs text-gray-700 leading-relaxed">{complaint.structured_output.why_it_matters}</p>
+              </div>
+              <div>
+                <p className="text-[9px] font-semibold text-[#FFA958] uppercase tracking-wider mb-0.5">{t.vision_outcome}</p>
+                <p className="text-xs font-semibold text-gray-800 leading-relaxed">{complaint.structured_output.desired_outcome}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl border border-black/8 p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-base">{CLUSTER_EMOJI[complaint.cluster_id]}</span>
+            <div>
+              <p className="font-bold text-sm text-black">{complaint.cluster_id}</p>
+              <p className="text-[10px] text-black/40">{t.cluster_label} · {clusterComplaints.length} complaints</p>
+            </div>
+          </div>
+
+          {others.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider">{t.similar_label}</p>
+              {others.slice(0, 3).map((c) => {
+                const cfg = STATUS_CONFIG[c.status];
+                return (
+                  <div key={c.id} className="bg-black/3 rounded-xl p-3 flex items-start gap-2.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-black/70 leading-snug line-clamp-2">{c.text_input}</p>
+                      <p className="text-[10px] text-black/35 mt-1">{timeAgo(c.timestamp)}</p>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${cfg.bg} ${cfg.color}`}>
+                      {c.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-black/40">{t.first_reporter}</p>
+          )}
+        </div>
+
+        <button
+          onClick={onBack}
+          className="w-full py-3 rounded-2xl border-2 border-[#FFA958] text-[#FFA958] font-bold text-sm"
+        >
+          {t.submit_another}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Updates Tab ─────────────────────────────────────────────────────────────
+
+function UpdatesTab({ complaints }: { complaints: Complaint[] }) {
+  const sorted = [...complaints].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+
+  const UPDATE_ICONS: Record<ComplaintStatus, string> = {
+    "Open": "🟡",
+    "Assigned": "🔵",
+    "In Progress": "🟠",
+    "Resolved": "✅",
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-6 pt-8 pb-4">
+        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>Updates</p>
+        <p className="text-xs text-black/40 mt-0.5">Live status from municipal system</p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-3">
+        {sorted.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
+            <Bell className="w-10 h-10 text-black/15" />
+            <p className="text-sm text-black/40">No complaints yet.<br />Submit one to see updates here.</p>
+          </div>
+        )}
+
+        {sorted.map((c) => {
+          const cfg = STATUS_CONFIG[c.status];
+          const Icon = cfg.Icon;
+          return (
+            <div key={c.id} className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${cfg.bg}`}>
+                  <Icon className={`w-4 h-4 ${cfg.color} ${c.status === "In Progress" ? "animate-spin" : ""}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-black leading-snug line-clamp-2">{c.text_input}</p>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
+                      {UPDATE_ICONS[c.status]} {c.status}
+                    </span>
+                    {c.assigned_department && (
+                      <span className="text-[10px] text-black/40 font-medium truncate">→ {c.assigned_department}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5 text-[10px] text-black/30">
+                    <MapPin className="w-3 h-3 shrink-0" />
+                    <span className="truncate">{c.location}</span>
+                    <span>·</span>
+                    <Clock className="w-3 h-3 shrink-0" />
+                    <span>{timeAgo(c.timestamp)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {c.structured_output && (
+                <div className="mt-3 pt-3 border-t border-black/5 flex items-center gap-1.5">
+                  <span className="text-[10px] text-[#FFA958] font-bold">✦ Vision submitted</span>
+                  <span className="text-[10px] text-black/25">· Visible to officers</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Community Tab ────────────────────────────────────────────────────────────
+
+function CommunityTab({ complaints }: { complaints: Complaint[] }) {
+  const clusters = ["Road Issues", "Sanitation", "Water Supply", "General Issues"] as const;
+  const totalComplaints = complaints.length;
+  const withVisions = complaints.filter((c) => c.structured_output).length;
+  const resolvedCount = complaints.filter((c) => c.status === "Resolved").length;
+  const engagementRate = totalComplaints > 0 ? Math.round((withVisions / totalComplaints) * 100) : 0;
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-6 pt-8 pb-4">
+        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>Your Ward</p>
+        <p className="text-xs text-black/40 mt-0.5">Community voice · shared priorities · collective vision</p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-4">
+        {/* Summary row with better visuals */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="bg-gradient-to-br from-[#FFA958]/10 to-[#FFA958]/5 rounded-2xl border border-[#FFA958]/25 p-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-[#FFA958]/20 rounded-full blur-2xl" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Heart className="w-4 h-4 text-[#FFA958]" />
+                <span className="text-[10px] font-semibold text-[#FFA958] uppercase tracking-wider">Engagement</span>
+              </div>
+              <p className="font-extrabold text-[#FFA958] text-3xl leading-none mb-1">{engagementRate}%</p>
+              <p className="text-[10px] text-black/50">{withVisions} visions from {totalComplaints} voices</p>
+            </div>
+          </div>
+          <div className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              <span className="text-[10px] font-semibold text-black/40 uppercase tracking-wider">Progress</span>
+            </div>
+            <p className="font-extrabold text-green-700 text-3xl leading-none mb-1">{resolvedCount}</p>
+            <p className="text-[10px] text-black/40">issues resolved this month</p>
+          </div>
+        </div>
+
+        {/* Civic Missions (instead of generic clusters) */}
+        <div className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider">Ward Priorities · What We're Working On</p>
+            <span className="text-[10px] text-black/30">{totalComplaints} active</span>
+          </div>
+          <div className="flex flex-col gap-3">
+            {clusters.map((cluster) => {
+              const count = complaints.filter((c) => c.cluster_id === cluster).length;
+              const pct = CLUSTER_COMMUNITY_PCT[cluster];
+              const barW = totalComplaints > 0 ? Math.round((count / totalComplaints) * 100) : 0;
+              const clusterResolved = complaints.filter((c) => c.cluster_id === cluster && c.status === "Resolved").length;
+              const progress = count > 0 ? Math.round((clusterResolved / count) * 100) : 0;
+
+              // Map to civic mission name
+              const missionNames: Record<string, string> = {
+                "Road Issues": "Better & Free Mobility",
+                "Sanitation": "Cleaner Neighborhoods",
+                "Water Supply": "Healthy Air & Water",
+                "General Issues": "Reliable Infrastructure",
+              };
+
+              return (
+                <div key={cluster} className="bg-gradient-to-r from-black/2 to-transparent rounded-xl p-3 border border-black/5">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-base">{CLUSTER_EMOJI[cluster]}</span>
+                        <span className="text-xs font-extrabold text-black/80">{missionNames[cluster]}</span>
+                      </div>
+                      <div className="flex items-center gap-2 ml-6">
+                        <span className="text-[10px] text-black/40">{count} active</span>
+                        <span className="text-[10px] text-black/20">·</span>
+                        <span className="text-[10px] font-semibold text-green-600">{clusterResolved} resolved</span>
+                        <span className="text-[10px] text-black/20">·</span>
+                        <span className="text-[10px] text-[#FFA958] font-semibold">{pct}% community concern</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Dual progress bars */}
+                  <div className="flex gap-1.5 ml-6">
+                    <div className="flex-1">
+                      <div className="flex justify-between text-[9px] text-black/30 mb-0.5">
+                        <span>Your activity</span>
+                        <span>{barW}%</span>
+                      </div>
+                      <div className="h-1 bg-black/8 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#FFA958] rounded-full transition-all" style={{ width: `${barW}%` }} />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between text-[9px] text-black/30 mb-0.5">
+                        <span>Resolution</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <div className="h-1 bg-black/8 rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Shared visions - more prominent */}
+        {withVisions > 0 && (
+          <div className="bg-gradient-to-br from-[#FFA958]/8 via-[#FFA958]/3 to-transparent rounded-2xl border border-[#FFA958]/20 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-lg bg-[#FFA958]/20 flex items-center justify-center">
+                <span className="text-sm">✦</span>
+              </div>
+              <div>
+                <p className="text-xs font-extrabold text-[#FFA758]">Community Visions</p>
+                <p className="text-[10px] text-black/40">{withVisions} neighbors shared their hopes</p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              {complaints
+                .filter((c) => c.structured_output)
+                .slice(0, 3)
+                .map((c) => (
+                  <div key={c.id} className="bg-white/60 backdrop-blur rounded-xl border border-[#FFA958]/25 p-3 shadow-sm">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[9px] text-[#FFA958] font-bold">✦</span>
+                      <span className="text-[9px] font-semibold text-[#FFA958] uppercase tracking-wider">{c.cluster_id}</span>
+                      <span className="text-[9px] text-black/20">·</span>
+                      <span className="text-[9px] text-black/30">{CLUSTER_COMMUNITY_PCT[c.cluster_id]}% ward alignment</span>
+                    </div>
+                    <p className="text-xs font-semibold text-black/80 leading-snug line-clamp-2">
+                      "{c.structured_output!.desired_outcome}"
+                    </p>
+                  </div>
+                ))}
+            </div>
+            {withVisions > 3 && (
+              <p className="text-[10px] text-black/30 text-center mt-2">+{withVisions - 3} more visions shared</p>
+            )}
+          </div>
+        )}
+
+        {/* Active campaigns with better visualization */}
+        <div className="bg-gradient-to-br from-blue-50 to-transparent border border-blue-200/50 rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs font-extrabold text-blue-700">Top Ward Priority</p>
+              <p className="text-[10px] text-black/40">Collaborative action · measurable progress</p>
+            </div>
+          </div>
+          <p className="text-sm font-extrabold text-black/90 leading-snug mb-2">
+            Better & Free Mobility
+          </p>
+          <p className="text-xs text-black/60 mb-3 leading-relaxed">
+            Road repairs on MG Road & surrounds · 34% of residents directly affected · 2 active issues tracked
+          </p>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-[10px] mb-0.5">
+              <span className="text-black/50">Community support</span>
+              <span className="font-bold text-blue-600">68%</span>
+            </div>
+            <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all" style={{ width: "68%" }} />
+            </div>
+            <p className="text-[9px] text-black/30 mt-1">32% more to reach municipal action threshold</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Profile Tab ─────────────────────────────────────────────────────────────
+
+function ProfileTab({ complaints }: { complaints: Complaint[] }) {
+  const myComplaints = complaints.slice(0, 4);
+  const resolvedCount = complaints.filter((c) => c.status === "Resolved").length;
+  const visionCount = complaints.filter((c) => c.structured_output).length;
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-6 pt-8 pb-3">
+        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>Profile</p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-4">
+        {/* Profile card */}
+        <div className="bg-[#FFA958] rounded-2xl p-4 text-black">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-full bg-black/15 flex items-center justify-center shrink-0">
+              <span className="font-extrabold text-black text-lg">R</span>
+            </div>
+            <div>
+              <p className="font-extrabold text-black text-base leading-tight">Rajesh Kumar</p>
+              <p className="text-xs text-black/60">Ward 12 · Bangalore North</p>
+              <p className="text-[10px] text-black/50 mt-0.5">Resident since 2014</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 bg-black/10 rounded-xl p-2.5 text-center">
+            <div>
+              <p className="font-extrabold text-black text-lg leading-none">{complaints.length}</p>
+              <p className="text-[10px] text-black/60 mt-0.5">Filed</p>
+            </div>
+            <div>
+              <p className="font-extrabold text-black text-lg leading-none">{resolvedCount}</p>
+              <p className="text-[10px] text-black/60 mt-0.5">Resolved</p>
+            </div>
+            <div>
+              <p className="font-extrabold text-black text-lg leading-none">{visionCount}</p>
+              <p className="text-[10px] text-black/60 mt-0.5">Visions</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Badges */}
+        <div className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
+          <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-3">Civic Badges</p>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { emoji: "🗣️", label: "Vocal Citizen" },
+              { emoji: "✦", label: "Vision Contributor" },
+              { emoji: "📍", label: "Ward 12 Rep" },
+            ].map((b) => (
+              <div key={b.label} className="flex items-center gap-1.5 bg-[#FFA958]/10 border border-[#FFA958]/25 rounded-full px-3 py-1.5">
+                <span className="text-sm">{b.emoji}</span>
+                <span className="text-[11px] font-semibold text-[#FFA958]">{b.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Supported priorities */}
+        <div className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Award className="w-4 h-4 text-[#FFA958]" />
+            <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider">Supported Priorities</p>
+          </div>
+          {[
+            { label: "Road repair on MG Road", pct: 34, cluster: "Road Issues" },
+            { label: "Waste collection in Sector 7", pct: 27, cluster: "Sanitation" },
+          ].map((p) => (
+            <div key={p.label} className="mb-3 last:mb-0">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">{CLUSTER_EMOJI[p.cluster]}</span>
+                  <span className="text-xs font-semibold text-black/70">{p.label}</span>
+                </div>
+                <span className="text-[10px] font-bold text-[#FFA958]">{p.pct}%</span>
+              </div>
+              <div className="h-1 bg-black/8 rounded-full overflow-hidden">
+                <div className="h-full bg-[#FFA958] rounded-full" style={{ width: `${p.pct * 2}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* My complaints */}
+        <div>
+          <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-2 px-1">My Complaints</p>
+          <div className="flex flex-col gap-2">
+            {myComplaints.length === 0 && (
+              <p className="text-xs text-black/30 text-center py-4">No complaints yet.</p>
+            )}
+            {myComplaints.map((c) => {
+              const cfg = STATUS_CONFIG[c.status];
+              return (
+                <div key={c.id} className="bg-white/80 rounded-xl border border-black/8 p-3 shadow-sm flex items-start gap-2.5">
+                  <div>
+                    <p className="text-xs font-semibold text-black/70 leading-snug line-clamp-2">{c.text_input}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
+                        {c.status}
+                      </span>
+                      <span className="text-[10px] text-black/30">{timeAgo(c.timestamp)}</span>
+                      {c.structured_output && (
+                        <span className="text-[10px] text-[#FFA958] font-bold">✦ Vision</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Bottom Nav ───────────────────────────────────────────────────────────────
+
+const NAV_TABS: Array<{ id: Tab; label: string; Icon: typeof FileText }> = [
+  { id: "report", label: "Report", Icon: FileText },
+  { id: "updates", label: "Updates", Icon: Bell },
+  { id: "community", label: "Community", Icon: Users },
+  { id: "profile", label: "Profile", Icon: User },
+];
+
+// ─── Main CitizenView ─────────────────────────────────────────────────────────
+
+export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: Props) {
+  const [tab, setTab] = useState<Tab>("report");
+  const [screen, setScreen] = useState<Screen>("home");
+  const [lang, setLang] = useState<Lang>("en");
+  const [inputText, setInputText] = useState("");
+  const [location, setLocation] = useState("");
+  const [submittedId, setSubmittedId] = useState<string | null>(null);
+
+  // Reflection state
+  const [contextInput, setContextInput] = useState("");
+  const [pastInput, setPastInput] = useState("");
+  const [visionInput, setVisionInput] = useState("");
+  const [generatedOutput, setGeneratedOutput] = useState<StructuredOutput | null>(null);
+
+  const t = T[lang];
+  const submittedComplaint = complaints.find((c) => c.id === submittedId) ?? null;
+  const clusterComplaints = submittedComplaint
+    ? complaints.filter((c) => c.cluster_id === submittedComplaint.cluster_id)
+    : [];
+  const recentCluster = complaints.length > 0 ? complaints[0].cluster_id : null;
+
+  // Count for Updates badge
+  const openCount = complaints.filter((c) => c.status === "Open" || c.status === "Assigned").length;
+
+  const handleSubmit = () => {
+    if (!inputText.trim()) return;
+    const c = onAddComplaint(inputText.trim(), location.trim());
+    setSubmittedId(c.id);
+    setInputText("");
+    setLocation("");
+    setContextInput("");
+    setPastInput("");
+    setVisionInput("");
+    setGeneratedOutput(null);
+    setScreen("ack");
+  };
+
+  const buildOutput = (id: string) => {
+    if (!submittedComplaint && !id) return;
+    const target = complaints.find((c) => c.id === id) ?? submittedComplaint;
+    if (!target) return;
+
+    const out: StructuredOutput = {
+      issue: target.text_input,
+      why_it_matters:
+        contextInput.trim() ||
+        `Affects daily life of residents in ${target.location}. Part of a broader ${target.cluster_id} cluster.`,
+      desired_outcome:
+        visionInput.trim() || "Proper resolution by the municipal authorities within the expected timeframe.",
+    };
+    setGeneratedOutput(out);
+    onUpdateComplaint(target.id, {
+      context: contextInput.trim() || undefined,
+      past_context: pastInput.trim() || undefined,
+      vision: visionInput.trim() || undefined,
+      structured_output: out,
+    });
+  };
+
+  const goToTracking = () => setScreen("tracking");
+
+  const handleReset = () => {
+    setScreen("home");
+    setSubmittedId(null);
+    setContextInput("");
+    setPastInput("");
+    setVisionInput("");
+    setGeneratedOutput(null);
+  };
+
+  // Whether we're in a flow that should hide the nav (post-submit reflection steps)
+  const inReflectionFlow = ["ack", "step_context", "step_past", "step_vision", "output", "community"].includes(screen);
+
+  return (
+    <div className="size-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+      {/* Phone mockup */}
+      <div
+        className="relative overflow-hidden shadow-2xl"
+        style={{ width: 390, height: 780, borderRadius: 40, background: "#faf3eb", border: "10px solid #1a1a1a", flexShrink: 0 }}
+      >
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[#1a1a1a] rounded-b-2xl z-20" />
+
+        {/* Status bar */}
+        <div className="absolute top-0 left-0 right-0 h-10 flex items-end justify-between px-6 pb-1 z-20">
+          <span className="text-[11px] font-semibold text-black">9:41</span>
+          <button
+            onClick={() => setLang((l) => (l === "en" ? "hi" : "en"))}
+            className="flex items-center bg-black/10 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-black/60 gap-1"
+          >
+            <span className={lang === "en" ? "text-black" : "text-black/40"}>EN</span>
+            <span className="text-black/20">|</span>
+            <span className={lang === "hi" ? "text-black" : "text-black/40"}>हि</span>
+          </button>
+          <div className="flex items-center gap-1 text-black">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
+              <rect x="0" y="4" width="3" height="7" rx="1" fill="currentColor" opacity="0.4" />
+              <rect x="4.5" y="2.5" width="3" height="8.5" rx="1" fill="currentColor" opacity="0.6" />
+              <rect x="9" y="0.5" width="3" height="10.5" rx="1" fill="currentColor" opacity="0.8" />
+              <rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor" />
+            </svg>
+            <svg width="15" height="12" viewBox="0 0 24 12" fill="currentColor">
+              <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" strokeOpacity="0.35" fill="none" />
+              <rect x="23" y="4" width="1" height="4" rx="1" fill="currentColor" fillOpacity="0.4" />
+              <rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Screen content */}
+        <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
+          {/* Report tab: existing screen flow */}
+          {tab === "report" && (
+            <>
+              {screen === "home" && (
+                <HomeScreen
+                  inputText={inputText} location={location}
+                  onInput={setInputText} onLocation={setLocation}
+                  onSubmit={handleSubmit} recentCluster={recentCluster}
+                  lang={lang} t={t}
+                />
+              )}
+              {screen === "ack" && submittedComplaint && (
+                <AckScreen
+                  complaint={submittedComplaint}
+                  onContinue={() => setScreen("step_context")}
+                  onSkip={goToTracking}
+                  t={t}
+                />
+              )}
+              {screen === "step_context" && (
+                <ReflectionCard
+                  stepNum={1} totalSteps={3}
+                  question={t.step_context_q} placeholder={t.step_context_ph}
+                  value={contextInput} onChange={setContextInput}
+                  onNext={() => setScreen("step_past")}
+                  onSkip={() => setScreen("step_past")}
+                  t={t}
+                />
+              )}
+              {screen === "step_past" && (
+                <ReflectionCard
+                  stepNum={2} totalSteps={3}
+                  question={t.step_past_q} placeholder={t.step_past_ph}
+                  value={pastInput} onChange={setPastInput}
+                  onNext={() => setScreen("step_vision")}
+                  onSkip={() => setScreen("step_vision")}
+                  t={t}
+                />
+              )}
+              {screen === "step_vision" && (
+                <ReflectionCard
+                  stepNum={3} totalSteps={3}
+                  question={t.step_vision_q} placeholder={t.step_vision_ph}
+                  value={visionInput} onChange={setVisionInput}
+                  onNext={() => {
+                    buildOutput(submittedId!);
+                    setScreen("output");
+                  }}
+                  onSkip={() => {
+                    buildOutput(submittedId!);
+                    setScreen("output");
+                  }}
+                  isVision
+                  t={t}
+                />
+              )}
+              {screen === "output" && generatedOutput && (
+                <OutputCard
+                  output={generatedOutput}
+                  onNext={() => setScreen("community")}
+                  t={t}
+                />
+              )}
+              {screen === "community" && submittedComplaint && (
+                <CommunityScreen
+                  complaint={submittedComplaint}
+                  onTrack={goToTracking}
+                  t={t}
+                />
+              )}
+              {screen === "tracking" && submittedComplaint && (
+                <TrackingScreen
+                  complaint={submittedComplaint}
+                  clusterComplaints={clusterComplaints}
+                  onBack={handleReset}
+                  t={t}
+                />
+              )}
+            </>
+          )}
+
+          {tab === "updates" && <UpdatesTab complaints={complaints} />}
+          {tab === "community" && <CommunityTab complaints={complaints} />}
+          {tab === "profile" && <ProfileTab complaints={complaints} />}
+        </div>
+
+        {/* Bottom navigation bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-[#faf3eb]/95 backdrop-blur border-t border-black/8 flex items-center z-30">
+          {NAV_TABS.map(({ id, label, Icon }) => {
+            const isActive = tab === id;
+            const showBadge = id === "updates" && openCount > 0 && tab !== "updates";
+            return (
+              <button
+                key={id}
+                onClick={() => {
+                  setTab(id);
+                  if (id === "report") {
+                    // If returning to report tab while in reflection flow, stay there
+                  }
+                }}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 h-full relative"
+              >
+                <div className="relative">
+                  <Icon
+                    className={`w-5 h-5 transition-all ${isActive ? "text-[#FFA958]" : "text-black/30"}`}
+                    strokeWidth={isActive ? 2.5 : 1.8}
+                  />
+                  {showBadge && (
+                    <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-[8px] font-bold text-white">{openCount}</span>
+                    </div>
+                  )}
+                </div>
+                <span
+                  className={`text-[10px] font-semibold transition-all ${isActive ? "text-[#FFA958]" : "text-black/30"}`}
+                >
+                  {label}
+                </span>
+                {isActive && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#FFA958] rounded-full" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
