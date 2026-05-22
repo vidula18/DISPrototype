@@ -29,10 +29,22 @@ export function LocationPicker({ value, onChange, lang, t }: LocationPickerProps
   }, [value]);
 
   const mockReverseGeocode = async (lat: number, lng: number) => {
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 1200));
-    // Provide a generic realistic area for the prototype
-    return MOCK_WARDS[Math.floor(Math.random() * MOCK_WARDS.length)];
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const data = await res.json();
+      
+      // Attempt to extract the most readable area name
+      const address = data.address;
+      const area = address.neighbourhood || address.suburb || address.village || address.town || address.city_district || address.city;
+      const state = address.state || address.region;
+      
+      return area ? `${area}, ${state || ''}`.replace(/, $/, '') : data.display_name.split(',').slice(0, 2).join(',');
+    } catch (error) {
+      console.warn('Geocoding API error:', error);
+      // Fallback to random mock if API fails/rate-limits
+      await new Promise(r => setTimeout(r, 600));
+      return MOCK_WARDS[Math.floor(Math.random() * MOCK_WARDS.length)];
+    }
   };
 
   const handleDetect = () => {

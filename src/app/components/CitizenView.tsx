@@ -27,7 +27,7 @@ const T: Record<Lang, Record<string, string>> = {
     issues: "issues. Your complaint will be clustered.",
     // Ack screen
     ack_heading: "We've received your complaint",
-    ack_conveyed: "We have conveyed this to",
+    ack_conveyed: "We have conveyed this to the authorities that are responsible.",
     ack_question: "If you have 2 more minutes, can you tell us more about it?",
     ack_continue: "Yes, tell us more",
     ack_skip: "Skip for now",
@@ -41,8 +41,16 @@ const T: Record<Lang, Record<string, string>> = {
     chip_others: "This also affects others in the area",
     step_past_q: "Tell me more about what was different before.",
     step_past_ph: "Earlier this stretch was well-maintained…",
+    chip_freq: "This is happening more frequently",
+    chip_worse: "It has gotten significantly worse recently",
+    chip_ignored: "Previous reports seem to be ignored",
+    chip_past_others: "Others have also noticed this change",
     step_vision_q: "What do you think can be done about it?",
     step_vision_ph: "The roads should be properly repaired, not just patched…",
+    chip_repair: "Complete repair instead of temporary fix",
+    chip_inspect: "Regular inspection and maintenance",
+    chip_update: "Modernize the infrastructure",
+    chip_vision_others: "I just want it working again",
     step_vision_note: "This is the most important part",
     voice_hint: "Tap mic to record (simulated)",
     next: "Next →",
@@ -55,7 +63,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision_note: "Submitted to municipal system · Now visible to officers",
     continue_to_community: "See community impact →",
     // Community
-    community_heading: "This issue affects more than just you",
+    community_heading: "Your Vision Structure for Civil Action",
     community_sub: "Your voice joins a growing community movement in your ward.",
     community_stat_pct: "of your ward shares this concern",
     community_stat_similar: "similar reports nearby",
@@ -87,7 +95,7 @@ const T: Record<Lang, Record<string, string>> = {
     recent_hint: "अन्य लोगों ने भी इसी तरह की",
     issues: "समस्याएं रिपोर्ट की हैं।",
     ack_heading: "आपकी शिकायत मिल गई",
-    ack_conveyed: "हमने यह बात पहुंचाई है",
+    ack_conveyed: "हमने इसे जिम्मेदार अधिकारियों तक पहुंचा दिया है।",
     ack_question: "क्या आप 2 मिनट में और बता सकते हैं?",
     ack_continue: "हाँ, और बताएं",
     ack_skip: "अभी नहीं",
@@ -100,8 +108,16 @@ const T: Record<Lang, Record<string, string>> = {
     chip_others: "यह क्षेत्र के अन्य लोगों को भी प्रभावित करता है",
     step_past_q: "पहले कैसा था? क्या बदला?",
     step_past_ph: "पहले यह सड़क ठीक रहती थी…",
+    chip_freq: "यह अधिक बार हो रहा है",
+    chip_worse: "हाल ही में यह काफी खराब हो गया है",
+    chip_ignored: "पिछली शिकायतों को नजरअंदाज कर दिया गया",
+    chip_past_others: "अन्य लोगों ने भी यह बदलाव देखा है",
     step_vision_q: "आपके अनुसार इसका हल क्या हो सकता है?",
     step_vision_ph: "सड़क की ठीक से मरम्मत होनी चाहिए…",
+    chip_repair: "अस्थायी समाधान के बजाय पूर्ण मरम्मत",
+    chip_inspect: "नियमित निरीक्षण और रखरखाव",
+    chip_update: "बुनियादी ढांचे का आधुनिकीकरण करें",
+    chip_vision_others: "मैं बस इसे फिर से ठीक काम करते देखना चाहता हूँ",
     step_vision_note: "यह सबसे महत्वपूर्ण हिस्सा है",
     voice_hint: "रिकॉर्ड करने के लिए माइक दबाएं (सिमुलेटेड)",
     next: "अगला →",
@@ -112,7 +128,7 @@ const T: Record<Lang, Record<string, string>> = {
     vision_outcome: "वांछित परिणाम",
     vision_note: "नगर पालिका प्रणाली को भेजा गया",
     continue_to_community: "सामुदायिक प्रभाव देखें →",
-    community_heading: "यह समस्या सिर्फ आपको ही नहीं, औरों को भी प्रभावित करती है",
+    community_heading: "नागरिक कार्रवाई के लिए आपकी दृष्टि संरचना",
     community_sub: "आपकी आवाज़ आपके वार्ड के बढ़ते सामुदायिक आंदोलन से जुड़ती है।",
     community_stat_pct: "वार्ड के लोग यह चिंता साझा करते हैं",
     community_stat_similar: "आसपास की समान शिकायतें",
@@ -160,7 +176,7 @@ function LandingScreen({ onStart, t }: { onStart: () => void, t: Record<string, 
     <div className="flex flex-col h-full px-6 pt-10 pb-10 bg-transparent relative z-10">
       <div className="mb-auto mt-4 text-center">
         <h1 className="font-extrabold text-black text-3xl tracking-tight drop-shadow-sm opacity-90">
-          Your Community
+          Sanchaar
         </h1>
         <p className="text-sm font-medium text-black/60 mt-2">
           A living snapshot of civic activity.
@@ -174,10 +190,10 @@ function LandingScreen({ onStart, t }: { onStart: () => void, t: Record<string, 
         <button
           onClick={onStart}
           aria-label="Add complaint"
-          className="flex items-center gap-3 bg-black text-white px-6 py-4 rounded-full shadow-2xl active:scale-95 transition-all hover:bg-black/90"
+          className="flex items-center gap-3 bg-[#FFA958] text-black px-6 py-4 rounded-full shadow-2xl shadow-[#FFA958]/30 active:scale-95 transition-all hover:bg-[#FFA958]/90"
         >
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-            <Plus className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 bg-black/10 rounded-full flex items-center justify-center">
+            <Plus className="w-5 h-5 text-black" />
           </div>
           <span className="font-bold text-base tracking-wide">Add complaint</span>
         </button>
@@ -215,11 +231,12 @@ const CLUSTER_EMOJI: Record<string, string> = {
 // ─── Sub-screens (Report tab) ─────────────────────────────────────────────────
 
 function HomeScreen({
-  inputText, location, onInput, onLocation, onSubmit, recentCluster, lang, t,
+  inputText, location, onInput, onLocation, onSubmit, recentCluster, onBack, lang, t,
 }: {
   inputText: string; location: string;
   onInput: (v: string) => void; onLocation: (v: string) => void;
   onSubmit: () => void; recentCluster: string | null;
+  onBack: () => void;
   lang: Lang; t: Record<string, string>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -228,7 +245,6 @@ function HomeScreen({
 
   const [isListening, setIsListening] = useState(false);
   const [voiceError, setVoiceError] = useState(false);
-  const [inferredSummary, setInferredSummary] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
   const originalTextRef = useRef("");
 
@@ -256,7 +272,6 @@ function HomeScreen({
       recognitionRef.current.onstart = () => {
         setIsListening(true);
         setVoiceError(false);
-        setInferredSummary(null);
       };
       
       recognitionRef.current.onresult = (event: any) => {
@@ -289,15 +304,7 @@ function HomeScreen({
     }
   };
 
-  // Re-run inference when not listening but we have text
-  useEffect(() => {
-    if (!isListening && inputText.trim().length > 3) {
-      const intent = inferIntent(inputText.trim());
-      setInferredSummary(`💡 ${lang === 'en' ? 'This seems to be about' : 'यह इससे संबंधित लगता है'}: ${intent.summary.toLowerCase()}`);
-    } else if (inputText.trim().length === 0) {
-      setInferredSummary(null);
-    }
-  }, [isListening, inputText, lang]);
+  // Removed inferredSummary live-inference effect as per user request to not over-interpret
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -308,8 +315,11 @@ function HomeScreen({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-7 pt-9 pb-3">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="px-7 pt-9 pb-3 relative">
+        <button onClick={onBack} className="absolute left-6 top-8 w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-4 mt-8">
           <div className="w-10 h-10 rounded-full bg-[#FFA958] flex items-center justify-center shrink-0">
             <span className="text-sm font-extrabold text-black">R</span>
           </div>
@@ -348,13 +358,16 @@ function HomeScreen({
               <button 
                 onClick={toggleListening}
                 aria-label={isListening ? "Stop recording" : "Start voice input"}
-                className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full shadow-md transition-all ${
                   isListening 
-                    ? "bg-red-100 text-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]" 
-                    : "bg-black/5 text-black/50 hover:bg-black/10 hover:text-black/70"
+                    ? "bg-red-500 text-white animate-pulse" 
+                    : "bg-[#FFA958] text-black shadow-[#FFA958]/30 hover:bg-[#FFA958]/90"
                 }`}
               >
-                <Mic className="w-4 h-4" />
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${isListening ? 'bg-white/20' : 'bg-black/10'}`}>
+                  <Mic className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-xs font-bold">{isListening ? "Listening..." : "Record"}</span>
               </button>
             </div>
           </div>
@@ -375,14 +388,6 @@ function HomeScreen({
           </div>
         )}
 
-        {!isListening && inferredSummary && !voiceError && inputText.trim().length > 3 && (
-          <div className="mx-1 px-3 py-2 bg-white/50 backdrop-blur border border-black/5 rounded-xl flex items-start gap-2 animate-in fade-in slide-in-from-bottom-2">
-            <p className="text-[11px] font-medium text-black/60 leading-relaxed">
-              {inferredSummary}
-            </p>
-          </div>
-        )}
-
         <button
           onClick={onSubmit}
           disabled={!canSubmit}
@@ -396,7 +401,7 @@ function HomeScreen({
           {t.submit}
         </button>
 
-        {recentCluster && (
+        {canSubmit && recentCluster && (
           <div className="bg-black/3 rounded-2xl p-3">
             <p className="text-xs text-black/50 leading-relaxed">
               {CLUSTER_EMOJI[recentCluster]} {t.recent_hint}{" "}
@@ -415,22 +420,23 @@ function HomeScreen({
   );
 }
 
-function AckScreen({ complaint, onContinue, onSkip, t }: {
-  complaint: Complaint; onContinue: () => void; onSkip: () => void;
+function AckScreen({ complaint, onContinue, onSkip, onBack, t }: {
+  complaint: Complaint; onContinue: () => void; onSkip: () => void; onBack: () => void;
   t: Record<string, string>;
 }) {
-  const dept = CLUSTER_DEPT[complaint.cluster_id] ?? "the relevant department";
   return (
-    <div className="flex flex-col h-full px-7 pt-10 pb-6">
-      <div className="flex flex-col gap-3 mb-8">
+    <div className="flex flex-col h-full px-7 pt-10 pb-6 relative">
+      <button onClick={onBack} className="absolute left-6 top-8 w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors">
+        <ArrowLeft className="w-4 h-4" />
+      </button>
+      <div className="flex flex-col gap-3 mb-8 mt-8">
         <div className="w-12 h-12 rounded-2xl bg-[#FFA958] flex items-center justify-center">
           <CheckCircle2 className="w-6 h-6 text-black" />
         </div>
         <div>
           <p className="font-extrabold text-black text-xl leading-tight">{t.ack_heading}</p>
           <p className="text-sm text-black/50 mt-1">
-            {t.ack_conveyed}{" "}
-            <span className="font-bold text-[#FFA757]">{dept}.</span>
+            {t.ack_conveyed}
           </p>
         </div>
       </div>
@@ -476,12 +482,12 @@ function AckScreen({ complaint, onContinue, onSkip, t }: {
 
 function ReflectionCard({
   stepNum, totalSteps, question, placeholder, value, onChange,
-  onNext, onSkip, isVision, chips, t,
+  onNext, onSkip, onBack, isVision, chips, t,
 }: {
   stepNum: number; totalSteps: number;
   question: string; placeholder: string;
   value: string; onChange: (v: string) => void;
-  onNext: () => void; onSkip: () => void;
+  onNext: () => void; onSkip: () => void; onBack: () => void;
   isVision?: boolean;
   chips?: string[];
   t: Record<string, string>;
@@ -502,8 +508,11 @@ function ReflectionCard({
   };
 
   return (
-    <div className="flex flex-col h-full px-6 pt-8 pb-6">
-      <div className="flex items-center gap-2 mb-6">
+    <div className="flex flex-col h-full px-6 pt-10 pb-6 relative">
+      <button onClick={onBack} className="absolute left-6 top-8 w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors">
+        <ArrowLeft className="w-4 h-4" />
+      </button>
+      <div className="flex items-center gap-2 mb-6 mt-8">
         {Array.from({ length: totalSteps }).map((_, i) => (
           <div
             key={i}
@@ -582,96 +591,38 @@ function ReflectionCard({
   );
 }
 
-function OutputCard({ output, onNext, t }: {
-  output: StructuredOutput; onNext: () => void; t: Record<string, string>;
-}) {
-  return (
-    <div className="flex flex-col h-full px-6 pt-8 pb-6">
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFA958] to-[#f97316] flex items-center justify-center shadow-lg">
-          <span className="text-lg">✦</span>
-        </div>
-        <div>
-          <p className="font-extrabold text-black text-lg leading-none">{t.your_vision}</p>
-          <p className="text-xs text-black/40 mt-0.5">Structured for civic action</p>
-        </div>
-      </div>
-
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200 shadow-md overflow-hidden mb-4">
-        <div className="border-b border-gray-100 p-4 bg-white">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t.vision_issue}</p>
-          <p className="text-sm font-bold text-gray-900 leading-snug">{output.issue}</p>
-        </div>
-        <div className="border-b border-gray-100 p-4">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{t.vision_why}</p>
-          <div className="flex items-start gap-2">
-            <div className="w-1 h-full bg-blue-400 rounded-full mt-1" />
-            <p className="text-sm text-gray-700 leading-relaxed flex-1">{output.why_it_matters}</p>
-          </div>
-        </div>
-        <div className="p-4 bg-gradient-to-br from-[#FFA958]/10 to-[#FFA958]/5">
-          <p className="text-[10px] font-semibold text-[#FFA958] uppercase tracking-wider mb-1.5">
-            {t.vision_outcome}
-          </p>
-          <div className="flex items-start gap-2">
-            <span className="text-base shrink-0">→</span>
-            <p className="text-sm font-bold text-gray-900 leading-relaxed flex-1">{output.desired_outcome}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Status badges */}
-      <div className="flex flex-col gap-2 mb-5">
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
-          <CheckCircle2 className="w-4 h-4 text-green-600" />
-          <span className="text-xs font-semibold text-green-700">Submitted to municipal system</span>
-        </div>
-        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
-          <Eye className="w-4 h-4 text-blue-600" />
-          <span className="text-xs font-semibold text-blue-700">Now visible to civic officers</span>
-        </div>
-      </div>
-
-      <button
-        onClick={onNext}
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#FFA958] text-black font-bold text-sm shadow-lg shadow-[#FFA958]/30 active:scale-95 transition-all mt-auto"
-      >
-        {t.continue_to_community}
-        <ChevronRight className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
-
-function CommunityScreen({ complaint, onTrack, t }: {
-  complaint: Complaint; onTrack: () => void; t: Record<string, string>;
+function CommunityScreen({ complaint, onTrack, onBack, t }: {
+  complaint: Complaint; onTrack: () => void; onBack: () => void; t: Record<string, string>;
 }) {
   const pct = CLUSTER_COMMUNITY_PCT[complaint.cluster_id] ?? 18;
   const similarCount = Math.floor(pct * 3.5); // Mock number for nearby reports
 
   return (
     <div className="flex flex-col h-full px-6 pt-10 pb-6 bg-transparent relative z-10">
+      <button onClick={onBack} className="absolute left-6 top-8 w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors">
+        <ArrowLeft className="w-4 h-4" />
+      </button>
       {/* Top Section */}
-      <div className="mb-auto">
-        <p className="font-extrabold text-black text-2xl leading-tight drop-shadow-sm">{t.community_heading}</p>
+      <div className="mb-auto mt-6">
+        <p className="font-extrabold text-black text-2xl leading-tight drop-shadow-sm pr-12">{t.community_heading}</p>
         <p className="text-sm font-medium text-black/60 mt-2">{t.community_sub}</p>
       </div>
 
-        {/* Massive spacer for CivicStructure to shine through as central visual anchor without overlap */}
+      {/* Massive spacer for CivicStructure to shine through as central visual anchor without overlap */}
       <div className="flex-1 min-h-[350px] pointer-events-none" />
 
       {/* Stats Section */}
       <div className="flex flex-col gap-3 mt-auto shrink-0">
         
-        {/* Compact Stats Row */}
-        <div className="flex gap-3">
-          <div className="flex-1 bg-white/70 backdrop-blur rounded-2xl border border-black/5 p-4 shadow-sm flex flex-col justify-center">
-            <p className="text-3xl font-black text-[#FFA958] leading-none mb-1.5">{pct}%</p>
-            <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_pct}</p>
+        {/* Structured Overlapping Stats */}
+        <div className="relative mb-4">
+          <div className="bg-white/90 backdrop-blur rounded-2xl border border-black/10 p-4 shadow-sm w-4/5 ml-auto translate-y-4 relative z-0">
+             <p className="text-2xl font-black text-black/80 leading-none mb-1.5">{similarCount}</p>
+             <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_similar}</p>
           </div>
-          <div className="flex-1 bg-white/70 backdrop-blur rounded-2xl border border-black/5 p-4 shadow-sm flex flex-col justify-center">
-            <p className="text-3xl font-black text-black/80 leading-none mb-1.5">{similarCount}</p>
-            <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_similar}</p>
+          <div className="bg-gradient-to-br from-[#FFA958]/90 to-[#FFA958] rounded-2xl border border-[#FFA958]/50 p-4 shadow-md w-4/5 relative z-10">
+             <p className="text-3xl font-black text-black leading-none mb-1.5">{pct}%</p>
+             <p className="text-[10px] font-bold text-black/80 uppercase tracking-wide leading-snug">{t.community_stat_pct}</p>
           </div>
         </div>
 
@@ -894,11 +845,13 @@ function CommunityTab({ complaints }: { complaints: Complaint[] }) {
   const engagementRate = totalComplaints > 0 ? Math.round((withVisions / totalComplaints) * 100) : 0;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-transparent relative z-10">
       <div className="px-6 pt-8 pb-4">
         <p className="font-extrabold text-black" style={{ fontSize: 20 }}>Your Ward</p>
         <p className="text-xs text-black/40 mt-0.5">Community voice · shared priorities · collective vision</p>
       </div>
+
+      <div className="flex-1 min-h-[350px] pointer-events-none" />
 
       <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-4">
         {/* Summary row with better visuals */}
@@ -1313,7 +1266,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
         {/* Screen content */}
         <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
-          {(screen === "landing" || screen === "community") && (
+          {(screen === "landing" || screen === "community" || tab === "community") && (
             <CivicStructure 
               complaints={complaints} 
               systemState={systemState} 
@@ -1332,6 +1285,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                   inputText={inputText} location={location}
                   onInput={setInputText} onLocation={setLocation}
                   onSubmit={handleSubmit} recentCluster={recentCluster}
+                  onBack={() => setScreen("landing")}
                   lang={lang} t={t}
                 />
               )}
@@ -1340,6 +1294,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                   complaint={submittedComplaint}
                   onContinue={() => setScreen("step_context")}
                   onSkip={goToTracking}
+                  onBack={() => setScreen("home")}
                   t={t}
                 />
               )}
@@ -1350,6 +1305,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                   value={contextInput} onChange={setContextInput}
                   onNext={() => setScreen("step_past")}
                   onSkip={() => setScreen("step_past")}
+                  onBack={() => setScreen("ack")}
                   chips={[t.chip_commute, t.chip_harder, t.chip_safety, t.chip_others]}
                   t={t}
                 />
@@ -1361,6 +1317,8 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                   value={pastInput} onChange={setPastInput}
                   onNext={() => setScreen("step_vision")}
                   onSkip={() => setScreen("step_vision")}
+                  onBack={() => setScreen("step_context")}
+                  chips={[t.chip_freq, t.chip_worse, t.chip_ignored, t.chip_past_others]}
                   t={t}
                 />
               )}
@@ -1371,20 +1329,15 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                   value={visionInput} onChange={setVisionInput}
                   onNext={() => {
                     buildOutput(submittedId!);
-                    setScreen("output");
+                    setScreen("community");
                   }}
                   onSkip={() => {
                     buildOutput(submittedId!);
-                    setScreen("output");
+                    setScreen("community");
                   }}
+                  onBack={() => setScreen("step_past")}
+                  chips={[t.chip_repair, t.chip_inspect, t.chip_update, t.chip_vision_others]}
                   isVision
-                  t={t}
-                />
-              )}
-              {screen === "output" && generatedOutput && (
-                <OutputCard
-                  output={generatedOutput}
-                  onNext={() => setScreen("community")}
                   t={t}
                 />
               )}
@@ -1392,6 +1345,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                 <CommunityScreen
                   complaint={submittedComplaint}
                   onTrack={goToTracking}
+                  onBack={() => setScreen("step_vision")}
                   t={t}
                 />
               )}
