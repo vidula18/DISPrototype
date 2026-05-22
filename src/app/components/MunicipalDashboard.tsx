@@ -4,6 +4,7 @@ import {
   CheckCircle2, CircleDot, Loader2, AlertCircle, Search, Eye,
   MessageSquare, Lightbulb, Sparkles, BarChart3, Activity,
   ArrowUpRight, ArrowDownRight, Minus, Calendar, Hash,
+  Map, Trash2, Droplet, FileText
 } from "lucide-react";
 import type { Complaint, ComplaintStatus, CivicMission } from "../App";
 import { CIVIC_MISSIONS, CLUSTER_TO_MISSION, CLUSTER_DEPT } from "../App";
@@ -22,11 +23,11 @@ const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg:
   Resolved: { label: "Resolved", color: "text-green-700", bg: "bg-green-50 border-green-200", dot: "bg-green-400", Icon: CheckCircle2 },
 };
 
-const CLUSTER_EMOJI: Record<string, string> = {
-  "Road Issues": "🛣️",
-  "Sanitation": "🗑️",
-  "Water Supply": "💧",
-  "General Issues": "📋",
+const CLUSTER_ICON: Record<string, React.ElementType> = {
+  "Road Issues": Map,
+  "Sanitation": Trash2,
+  "Water Supply": Droplet,
+  "General Issues": FileText,
 };
 
 function timeAgo(iso: string) {
@@ -687,7 +688,13 @@ function CommunityInsightsView({ complaints }: { complaints: Complaint[] }) {
                 <Sparkles className="w-5 h-5 text-[#FFA958] shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold text-[#FFA958]">{CLUSTER_EMOJI[c.cluster_id]} {c.cluster_id}</span>
+                    <span className="text-xs font-bold text-[#FFA958] flex items-center gap-1">
+                      {(() => {
+                        const Icon = CLUSTER_ICON[c.cluster_id] || Map;
+                        return <Icon className="w-3.5 h-3.5" />;
+                      })()}
+                      {c.cluster_id}
+                    </span>
                     <span className="text-xs text-gray-400">·</span>
                     <span className="text-xs text-gray-400">{timeAgo(c.timestamp)}</span>
                   </div>
@@ -737,7 +744,13 @@ function ImpactTimelineView({ complaints }: { complaints: Complaint[] }) {
                       </span>
                       <span className="text-xs text-gray-500">{timeAgo(c.timestamp)}</span>
                     </div>
-                    <span className="text-xs text-gray-400">{CLUSTER_EMOJI[c.cluster_id]} {c.cluster_id}</span>
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      {(() => {
+                        const Icon = CLUSTER_ICON[c.cluster_id] || Map;
+                        return <Icon className="w-3.5 h-3.5" />;
+                      })()}
+                      {c.cluster_id}
+                    </span>
                   </div>
 
                   <p className="text-sm font-semibold text-gray-900 mb-2">{c.text_input}</p>

@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import {
   Send, MapPin, ArrowLeft, Users, Clock, CheckCircle2,
   CircleDot, Loader2, AlertCircle, Mic, ChevronRight, SkipForward,
-  FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye, Plus
+  FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye, Plus,
+  Map, Trash2, Droplet
 } from "lucide-react";
 import type { Complaint, ComplaintStatus, StructuredOutput } from "../App";
 import { getCluster, inferIntent, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
@@ -63,7 +64,8 @@ const T: Record<Lang, Record<string, string>> = {
     vision_note: "Submitted to municipal system · Now visible to officers",
     continue_to_community: "See community impact →",
     // Community
-    community_heading: "Your Vision Structure for Civil Action",
+    vision_heading: "Your Vision",
+    vision_subheading: "Structure for Civil Action",
     community_sub: "Your voice joins a growing community movement in your ward.",
     community_stat_pct: "of your ward shares this concern",
     community_stat_similar: "similar reports nearby",
@@ -128,7 +130,8 @@ const T: Record<Lang, Record<string, string>> = {
     vision_outcome: "वांछित परिणाम",
     vision_note: "नगर पालिका प्रणाली को भेजा गया",
     continue_to_community: "सामुदायिक प्रभाव देखें →",
-    community_heading: "नागरिक कार्रवाई के लिए आपकी दृष्टि संरचना",
+    vision_heading: "आपकी दृष्टि",
+    vision_subheading: "नागरिक कार्रवाई के लिए संरचना",
     community_sub: "आपकी आवाज़ आपके वार्ड के बढ़ते सामुदायिक आंदोलन से जुड़ती है।",
     community_stat_pct: "वार्ड के लोग यह चिंता साझा करते हैं",
     community_stat_similar: "आसपास की समान शिकायतें",
@@ -221,11 +224,11 @@ const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg:
   Resolved: { label: "Resolved", color: "text-green-700", bg: "bg-green-50 border-green-200", Icon: CheckCircle2 },
 };
 
-const CLUSTER_EMOJI: Record<string, string> = {
-  "Road Issues": "🛣️",
-  "Sanitation": "🗑️",
-  "Water Supply": "💧",
-  "General Issues": "📋",
+const CLUSTER_ICON: Record<string, React.ElementType> = {
+  "Road Issues": Map,
+  "Sanitation": Trash2,
+  "Water Supply": Droplet,
+  "General Issues": FileText,
 };
 
 // ─── Sub-screens (Report tab) ─────────────────────────────────────────────────
@@ -334,14 +337,17 @@ function HomeScreen({
         <p className="text-xs text-black/35 mt-1">{t.tagline}</p>
       </div>
 
-      {preview && (
-        <div className="mx-6 mb-2.5">
-          <div className="flex items-center gap-1.5 bg-[#FFA958]/10 border border-[#FFA958]/30 rounded-full px-3 py-1.5">
-            <span className="text-sm">{CLUSTER_EMOJI[preview]}</span>
-            <span className="text-xs font-semibold text-[#FFA958]">{t.cluster_preview} {preview}</span>
+      {preview && (() => {
+        const PreviewIcon = CLUSTER_ICON[preview] || Map;
+        return (
+          <div className="mx-6 mb-2.5">
+            <div className="flex items-center gap-1.5 bg-[#FFA958]/10 border border-[#FFA958]/30 rounded-full px-3 py-1.5 w-fit">
+              <PreviewIcon className="w-4 h-4 text-[#FFA958]" />
+              <span className="text-xs font-semibold text-[#FFA958]">{t.cluster_preview} {preview}</span>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <div className="flex-1 px-6 flex flex-col gap-2.5 overflow-y-auto">
         <div className="bg-white/80 backdrop-blur rounded-2xl border border-black/8 shadow-sm overflow-hidden flex flex-col">
@@ -401,14 +407,18 @@ function HomeScreen({
           {t.submit}
         </button>
 
-        {canSubmit && recentCluster && (
-          <div className="bg-black/3 rounded-2xl p-3">
-            <p className="text-xs text-black/50 leading-relaxed">
-              {CLUSTER_EMOJI[recentCluster]} {t.recent_hint}{" "}
-              <span className="font-semibold">{recentCluster.toLowerCase()}</span> {t.issues}
-            </p>
-          </div>
-        )}
+        {canSubmit && recentCluster && (() => {
+          const RecentIcon = CLUSTER_ICON[recentCluster] || Map;
+          return (
+            <div className="bg-black/3 rounded-2xl p-3 flex items-start gap-2">
+              <RecentIcon className="w-4 h-4 text-black/40 shrink-0 mt-0.5" />
+              <p className="text-xs text-black/50 leading-relaxed">
+                {t.recent_hint}{" "}
+                <span className="font-semibold">{recentCluster.toLowerCase()}</span> {t.issues}
+              </p>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="px-6 py-3 text-center">
@@ -604,8 +614,9 @@ function CommunityScreen({ complaint, onTrack, onBack, t }: {
       </button>
       {/* Top Section */}
       <div className="mb-auto mt-6">
-        <p className="font-extrabold text-black text-2xl leading-tight drop-shadow-sm pr-12">{t.community_heading}</p>
-        <p className="text-sm font-medium text-black/60 mt-2">{t.community_sub}</p>
+        <p className="font-extrabold text-black text-2xl leading-tight drop-shadow-sm">{t.vision_heading}</p>
+        <p className="text-base font-semibold text-black/70 leading-snug mt-1">{t.vision_subheading}</p>
+        <p className="text-sm font-medium text-black/50 mt-3 pr-8">{t.community_sub}</p>
       </div>
 
       {/* Massive spacer for CivicStructure to shine through as central visual anchor without overlap */}
@@ -614,15 +625,15 @@ function CommunityScreen({ complaint, onTrack, onBack, t }: {
       {/* Stats Section */}
       <div className="flex flex-col gap-3 mt-auto shrink-0">
         
-        {/* Structured Overlapping Stats */}
-        <div className="relative mb-4">
-          <div className="bg-white/90 backdrop-blur rounded-2xl border border-black/10 p-4 shadow-sm w-4/5 ml-auto translate-y-4 relative z-0">
-             <p className="text-2xl font-black text-black/80 leading-none mb-1.5">{similarCount}</p>
-             <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_similar}</p>
-          </div>
-          <div className="bg-gradient-to-br from-[#FFA958]/90 to-[#FFA958] rounded-2xl border border-[#FFA958]/50 p-4 shadow-md w-4/5 relative z-10">
+        {/* Structured Side-by-Side Stats */}
+        <div className="flex gap-3 mb-4">
+          <div className="flex-1 bg-gradient-to-br from-[#FFA958]/90 to-[#FFA958] rounded-2xl border border-[#FFA958]/50 p-4 shadow-md">
              <p className="text-3xl font-black text-black leading-none mb-1.5">{pct}%</p>
              <p className="text-[10px] font-bold text-black/80 uppercase tracking-wide leading-snug">{t.community_stat_pct}</p>
+          </div>
+          <div className="flex-1 bg-white/90 backdrop-blur rounded-2xl border border-black/10 p-4 shadow-sm">
+             <p className="text-2xl font-black text-black/80 leading-none mb-1.5">{similarCount}</p>
+             <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_similar}</p>
           </div>
         </div>
 
@@ -722,7 +733,12 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
 
         <div className="bg-white rounded-2xl border border-black/8 p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-base">{CLUSTER_EMOJI[complaint.cluster_id]}</span>
+            <span className="text-base">
+              {(() => {
+                const Icon = CLUSTER_ICON[complaint.cluster_id] || Map;
+                return <Icon className="w-5 h-5 text-black" />;
+              })()}
+            </span>
             <div>
               <p className="font-bold text-sm text-black">{complaint.cluster_id}</p>
               <p className="text-[10px] text-black/40">{t.cluster_label} · {clusterComplaints.length} complaints</p>
@@ -904,7 +920,12 @@ function CommunityTab({ complaints }: { complaints: Complaint[] }) {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-base">{CLUSTER_EMOJI[cluster]}</span>
+                        <span className="text-base">
+                          {(() => {
+                            const Icon = CLUSTER_ICON[cluster] || Map;
+                            return <Icon className="w-4 h-4 text-black" />;
+                          })()}
+                        </span>
                         <span className="text-xs font-extrabold text-black/80">{missionNames[cluster]}</span>
                       </div>
                       <div className="flex items-center gap-2 ml-6">
@@ -1084,7 +1105,12 @@ function ProfileTab({ complaints }: { complaints: Complaint[] }) {
             <div key={p.label} className="mb-3 last:mb-0">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm">{CLUSTER_EMOJI[p.cluster]}</span>
+                  <span className="text-sm">
+                    {(() => {
+                      const Icon = CLUSTER_ICON[p.cluster] || Map;
+                      return <Icon className="w-4 h-4 text-black" />;
+                    })()}
+                  </span>
                   <span className="text-xs font-semibold text-black/70">{p.label}</span>
                 </div>
                 <span className="text-[10px] font-bold text-[#FFA958]">{p.pct}%</span>
@@ -1266,7 +1292,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
         {/* Screen content */}
         <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
-          {(screen === "landing" || screen === "community" || tab === "community") && (
+          {((tab === "report" && (screen === "landing" || screen === "community")) || tab === "community") && (
             <CivicStructure 
               complaints={complaints} 
               systemState={systemState} 
