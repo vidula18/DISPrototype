@@ -11,15 +11,142 @@ interface CivicStructureProps {
   recentlyAddedId?: string | null;
 }
 
-// Map each cluster to a central coordinate on the grid
-const CLUSTER_CENTERS: Record<string, { x: number; y: number; color: string }> = {
-  "Road Issues": { x: 30, y: 30, color: "#FFA958" },      // Peach
-  "Sanitation": { x: -30, y: 30, color: "#f97316" },      // Coral
-  "Water Supply": { x: -30, y: -30, color: "#a8e6cf" },   // Mint
-  "General Issues": { x: 30, y: -30, color: "#e2e8f0" },  // Soft gray
+// Map each cluster to a specific color from the reference
+const CLUSTER_COLORS: Record<string, string> = {
+  "Road Issues": "#F7A072",      // Peach/Orange
+  "Sanitation": "#A67C74",       // Earthy Brown
+  "Water Supply": "#A1CBA4",     // Mint Green
+  "General Issues": "#F2D8B3",   // Light Sand
 };
 
-const DEFAULT_CENTER = { x: 0, y: 0, color: "#cbd5e1" };
+const DEFAULT_COLOR = "#D1C8C1";
+
+// Grid configuration for isometric layout
+const CUBE_SIZE = 32;
+const SPACING = CUBE_SIZE;
+
+// Calculate deterministic grid positions that look like the reference clusters
+function getGridPosition(clusterId: string, index: number, state: SystemState, activeClusterId?: string | null) {
+  // Base coordinates for different clusters to form separate islands initially
+  const centers: Record<string, { x: number, y: number }> = {
+    "Road Issues": { x: 2, y: 2 },
+    "Sanitation": { x: -3, y: 4 },
+    "Water Supply": { x: -2, y: -2 },
+    "General Issues": { x: 4, y: -2 },
+  };
+
+  const center = centers[clusterId] || { x: 0, y: 0 };
+  
+  // Create a structured but organic looking cluster
+  // We'll use a spiral pattern on a grid
+  let dx = 0, dy = 0, dz = 0;
+  
+  if (index > 0) {
+    // Math to place cubes in a layered grid pattern (x, y, z steps)
+    const layer = Math.floor(Math.pow(index, 1/3));
+    const remainder = index - Math.pow(layer, 3);
+    const side = Math.floor(Math.sqrt(remainder));
+    
+    // Simple pseudo-random but deterministic placement around center
+    const hash = (index * 137) % 5;
+    if (hash === 0) { dx = layer; dy = side; }
+    else if (hash === 1) { dx = -side; dy = layer; }
+    else if (hash === 2) { dx = -layer; dy = -side; dz = 1; }
+    else if (hash === 3) { dx = side; dy = -layer; }
+    else { dx = 0; dy = 0; dz = layer; }
+  }
+
+  let x = (center.x + dx) * SPACING;
+  let y = (center.y + dy) * SPACING;
+  let z = dz * CUBE_SIZE;
+
+  // Apply state effects
+  if (state === 'clustering') {
+    // Pull everything slightly tighter towards 0,0
+    x = x * 0.85;
+    y = y * 0.85;
+  } else if (state === 'negotiation' && activeClusterId === clusterId) {
+    // Separate one part
+    if (index % 3 === 0) {
+      x += SPACING * 1.5;
+      y += SPACING * 1.5;
+      z += CUBE_SIZE;
+    }
+  } else if (state === 'response' && activeClusterId === clusterId) {
+    z += Math.sin(index) * 10 + 10;
+  }
+
+  return { x, y, z };
+}
+
+// True 3D Cube Component
+const Cube = ({ x, y, z, color, isNew, delay = 0, systemState }: { x: number, y: number, z: number, color: string, isNew: boolean, delay?: number, systemState: SystemState }) => {
+  const size = CUBE_SIZE;
+  
+  let animation = {
+    x, y, z,
+    opacity: 1,
+    scale: 1
+  };
+
+  if (systemState === 'response') {
+    animation.z = [z, z + 20, z];
+  }
+
+  return (
+    <motion.div
+      className="absolute"
+      initial={isNew ? { x, y, z: z + 300, opacity: 0, scale: 0.5 } : { x, y, z, opacity: 0, scale: 0.8 }}
+      animate={animation}
+      transition={{
+        type: "spring",
+        stiffness: isNew ? 120 : 60,
+        damping: isNew ? 15 : 20,
+        delay: isNew ? 0.2 : delay, // Stagger intro
+      }}
+      style={{
+        width: size,
+        height: size,
+        transformStyle: 'preserve-3d',
+        // Center the cube on its coordinate
+        marginLeft: -size / 2,
+        marginTop: -size / 2,
+      }}
+    >
+      {/* Top Face - Lightest (Light source from top) */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: color,
+          transform: `translateZ(${size}px)`,
+          border: '1px solid rgba(255,255,255,0.1)',
+        }} 
+      />
+      
+      {/* Right Face - Darkest (Shadow) */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: color,
+          filter: 'brightness(0.65)',
+          transform: `translateX(${size/2}px) translateZ(${size/2}px) rotateY(90deg)`,
+          border: '1px solid rgba(0,0,0,0.05)',
+        }} 
+      />
+      
+      {/* Front/Left Face - Medium */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: color,
+          filter: 'brightness(0.85)',
+          transform: `translateY(${size/2}px) translateZ(${size/2}px) rotateX(-90deg)`,
+          border: '1px solid rgba(0,0,0,0.05)',
+        }} 
+      />
+    </motion.div>
+  );
+};
 
 export function CivicStructure({
   complaints,
@@ -27,143 +154,65 @@ export function CivicStructure({
   activeClusterId,
   recentlyAddedId
 }: CivicStructureProps) {
-  // Deterministic positioning around a cluster center
-  const getGridPosition = (clusterId: string, index: number, total: number, state: SystemState) => {
-    const center = CLUSTER_CENTERS[clusterId] || DEFAULT_CENTER;
-    
-    // Base spacing
-    let spacing = 20;
-    
-    // If clustering state, tighter packing
-    if (state === 'clustering') {
-      spacing = 12;
-    } else if (state === 'negotiation' && activeClusterId === clusterId) {
-      spacing = 25; // Expands during negotiation
-    }
-    
-    // Simple spiral algorithm for placement
-    const angle = index * (Math.PI * 2.39996); // Golden angle
-    const radius = Math.sqrt(index) * spacing;
-    
-    let x = center.x + Math.cos(angle) * radius;
-    let y = center.y + Math.sin(angle) * radius;
-    let z = 0;
-
-    // Apply specific state effects
-    if (state === 'negotiation' && activeClusterId === clusterId) {
-      // "One part separates slightly, shifts, and reconnects"
-      if (index % 3 === 0) {
-        x += 10;
-        y += 10;
-        z += 15;
-      }
-    }
-
-    if (state === 'response' && activeClusterId === clusterId) {
-      // Lift slightly
-      z += Math.sin(index) * 5 + 5;
-    }
-
-    return { x, y, z, color: center.color };
-  };
-
+  
   const units = useMemo(() => {
     const clusterCounts: Record<string, number> = {};
     return complaints.map((c) => {
       if (!clusterCounts[c.cluster_id]) clusterCounts[c.cluster_id] = 0;
       const index = clusterCounts[c.cluster_id]++;
-      const pos = getGridPosition(c.cluster_id, index, complaints.length, systemState);
+      const pos = getGridPosition(c.cluster_id, index, systemState, activeClusterId);
       
       return {
         id: c.id,
         cluster: c.cluster_id,
+        color: CLUSTER_COLORS[c.cluster_id] || DEFAULT_COLOR,
         ...pos,
-        isNew: c.id === recentlyAddedId
+        isNew: c.id === recentlyAddedId,
+        // Sort index for stagger
+        delay: (index * 0.05) + (Math.random() * 0.1)
       };
     });
   }, [complaints, systemState, activeClusterId, recentlyAddedId]);
 
   return (
-    <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-visible z-0" style={{ perspective: '1000px' }}>
-      {/* Container with isometric transform */}
+    <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-visible z-0" style={{ perspective: '1200px' }}>
+      
+      {/* Ambient background glow from reference */}
+      <motion.div 
+        className="absolute w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,_rgba(255,218,185,0.4)_0%,_rgba(255,240,225,0)_70%)]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
+      />
+
+      {/* Main 3D Container with Isometric Transform */}
       <motion.div 
         className="relative w-0 h-0"
-        initial={{ rotateX: 60, rotateZ: -45 }}
+        initial={{ rotateX: 60, rotateZ: -45, scale: 0.9, y: 50 }}
         animate={{ 
           rotateX: 60, 
-          rotateZ: systemState === 'idle' ? -45 : -40,
-          scale: systemState === 'clustering' ? 1.05 : 1
+          rotateZ: systemState === 'clustering' ? -35 : -45, // Subtle rotation on cluster
+          scale: 1,
+          y: 0
         }}
-        transition={{ duration: 3, ease: "easeInOut" }}
+        transition={{ duration: 2, ease: "easeOut" }}
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {units.map((unit) => {
-          // Stagger delays based on state
-          const isTargetCluster = activeClusterId === unit.cluster;
-          
-          let animation = {
-            x: unit.x,
-            y: unit.y,
-            z: unit.z,
-            scale: 1,
-            opacity: 0.85,
-          };
-
-          if (systemState === 'response' && isTargetCluster) {
-            animation.scale = [1, 1.2, 1];
-            animation.opacity = [0.85, 1, 0.85];
-          }
-
-          const isNewDrop = systemState === 'submitting' && unit.isNew;
-
-          return (
-            <motion.div
+        {/* Sort units by Z and Y to help browser rendering depth (though preserve-3d should handle it) */}
+        {units
+          .sort((a, b) => (a.z + a.x + a.y) - (b.z + b.x + b.y))
+          .map((unit) => (
+            <Cube 
               key={unit.id}
-              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-sm"
-              initial={isNewDrop ? { x: unit.x, y: unit.y, z: 200, opacity: 0, scale: 0.5 } : { x: unit.x, y: unit.y, z: unit.z, opacity: 0.85, scale: 1 }}
-              animate={animation}
-              transition={{
-                type: "spring",
-                stiffness: isNewDrop ? 150 : 60,
-                damping: isNewDrop ? 12 : 15,
-                mass: 1,
-                // Add a subtle wave delay for response
-                delay: (systemState === 'response' && isTargetCluster) ? Math.random() * 0.4 : 0
-              }}
-              style={{
-                transformStyle: 'preserve-3d',
-                background: `linear-gradient(135deg, ${unit.color} 0%, rgba(255,255,255,0.4) 100%)`,
-                boxShadow: `
-                  -2px 2px 5px rgba(0,0,0,0.05),
-                  0px 0px 15px ${unit.color}40,
-                  inset 1px 1px 2px rgba(255,255,255,0.8)
-                `,
-                backdropFilter: "blur(4px)",
-                border: "1px solid rgba(255,255,255,0.5)"
-              }}
-            >
-              {/* Fake thickness for the cube using pseudo-elements wouldn't work easily with motion.div inline styles. 
-                  We use thick borders/box-shadows to simulate depth. */}
-              <div 
-                className="absolute inset-0 bg-white/20" 
-                style={{
-                  transform: "translateZ(-4px)",
-                  boxShadow: "0 0 10px rgba(0,0,0,0.1)"
-                }}
-              />
-            </motion.div>
-          );
-        })}
-
-        {/* Ambient base glow */}
-        <div 
-          className="absolute -left-32 -top-32 w-64 h-64 rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(255,169,88,0.15) 0%, transparent 70%)",
-            filter: "blur(30px)",
-            transform: "translateZ(-20px)"
-          }}
-        />
+              x={unit.x}
+              y={unit.y}
+              z={unit.z}
+              color={unit.color}
+              isNew={unit.isNew}
+              delay={unit.delay}
+              systemState={systemState}
+            />
+          ))}
       </motion.div>
     </div>
   );

@@ -1289,12 +1289,14 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
         {/* Screen content */}
         <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
-          <CivicStructure 
-            complaints={complaints} 
-            systemState={systemState} 
-            activeClusterId={submittedComplaint?.cluster_id ?? recentCluster} 
-            recentlyAddedId={submittedId}
-          />
+          {(screen === "community" || screen === "tracking") && (
+            <CivicStructure 
+              complaints={complaints} 
+              systemState={systemState} 
+              activeClusterId={submittedComplaint?.cluster_id ?? recentCluster} 
+              recentlyAddedId={submittedId}
+            />
+          )}
           {/* Report tab: existing screen flow */}
           {tab === "report" && (
             <>
