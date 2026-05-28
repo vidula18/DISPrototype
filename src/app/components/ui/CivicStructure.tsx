@@ -70,7 +70,7 @@ function getGridPosition(clusterId: string, index: number, state: SystemState, a
 const Cube = ({ x, y, z, color, isNew, delay = 0, systemState }: { x: number, y: number, z: number, color: string, isNew: boolean, delay?: number, systemState: SystemState }) => {
   const size = CUBE_SIZE;
   
-  let animation = {
+  let animation: any = {
     x, y, z,
     opacity: 1,
     scale: 1

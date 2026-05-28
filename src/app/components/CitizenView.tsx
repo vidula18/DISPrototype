@@ -129,7 +129,6 @@ const T: Record<Lang, Record<string, string>> = {
     community_more_reach: "32% more to reach municipal action threshold",
     tracking_latest_update: "Latest Update",
     tracking_regarding: "Regarding: ",
-    tracking_title: "Tracking Your Complaint",
     tracking_latest: "Latest Updates",
     community_setup: "Community Setup Complete",
     community_linked: "Your vision has been linked to active reports in your ward to form a unified civic priority.",
@@ -295,7 +294,6 @@ const T: Record<Lang, Record<string, string>> = {
     community_more_reach: "மாநகராட்சி நடவடிக்கைக்கு மேலும் 32% தேவை",
     tracking_latest_update: "சமீபத்திய புதுப்பிப்பு",
     tracking_regarding: "தொடர்பாக: ",
-    tracking_title: "உங்கள் குறையை கண்காணிக்கவும்",
     tracking_latest: "சமீபத்திய புதுப்பிப்புகள்",
     community_setup: "சமூக அமைப்பு முடிந்தது",
     community_linked: "உங்கள் பார்வை ஒருங்கிணைந்த குடிமை முன்னுரிமையை உருவாக்க உங்கள் வார்டில் உள்ள செயலில் உள்ள அறிக்கைகளுடன் இணைக்கப்பட்டுள்ளது.",
@@ -936,9 +934,9 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
         <div className="bg-white rounded-2xl border border-black/8 p-4 shadow-sm">
           <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-3">{t.live_status}</p>
           <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 ${statusCfg.bg}`}>
-            <Icon className={`w-4 h-4 shrink-0 ${statusCfg.color} ${complaint.status === "In Progress" ? "animate-spin" : ""}`} />
+            <Icon className={`w-4 h-4 shrink-0 ${statusCfg.color} ${complaint.status === "Action Initiated" ? "animate-spin" : ""}`} />
             <span className={`font-bold text-sm ${statusCfg.color}`}>{t['status_' + complaint.status.toLowerCase().replace(" ", "_")] || statusCfg.label}</span>
-            {complaint.status === "Open" && (
+            {complaint.status === "Submitted" && (
               <span className="ml-auto text-[10px] text-amber-600">{t.awaiting}</span>
             )}
           </div>
@@ -1680,7 +1678,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
   const recentCluster = complaints.length > 0 ? complaints[0].cluster_id : null;
 
   // Count for Updates badge
-  const openCount = complaints.filter((c) => c.status === "Open" || c.status === "Assigned").length;
+  const openCount = complaints.filter((c) => c.status !== "Resolved").length;
 
   const handleSubmit = () => {
     if (!inputText.trim()) return;
@@ -1901,9 +1899,9 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
             </>
           )}
 
-          {tab === "updates" && !showMyComplaints && !activeComplaintId && <UpdatesTab complaints={complaints} onSelect={setActiveComplaintId} />}
-          {tab === "community" && !showMyComplaints && !activeComplaintId && <CommunityTab complaints={complaints} />}
-          {tab === "profile" && !showMyComplaints && !activeComplaintId && <ProfileTab complaints={complaints} onViewAll={() => setShowMyComplaints(true)} />}
+          {tab === "updates" && !showMyComplaints && !activeComplaintId && <UpdatesTab complaints={complaints} onSelect={setActiveComplaintId} t={t} />}
+          {tab === "community" && !showMyComplaints && !activeComplaintId && <CommunityTab complaints={complaints} t={t} />}
+          {tab === "profile" && !showMyComplaints && !activeComplaintId && <ProfileTab complaints={complaints} onViewAll={() => setShowMyComplaints(true)} t={t} />}
         </div>
 
         {/* Bottom navigation bar */}
