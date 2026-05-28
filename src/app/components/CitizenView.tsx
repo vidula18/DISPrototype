@@ -178,7 +178,7 @@ function LandingScreen({
   const cfg = activeComplaint ? STATUS_CONFIG[activeComplaint.status] : null;
 
   return (
-    <div className="flex flex-col h-full px-6 pt-10 pb-10 bg-transparent relative z-10">
+    <div className="flex flex-col h-full px-6 pt-10 pb-10 bg-transparent relative z-10 overflow-y-auto">
       <div className="mb-auto mt-4 text-center">
         <h1 className="font-extrabold text-black text-3xl tracking-tight drop-shadow-sm opacity-90">
           Sanchaar
@@ -553,7 +553,7 @@ function ReflectionCard({
         <p className="font-extrabold text-[#FFA757] text-xl leading-snug">{question}</p>
       </div>
 
-      <div className="flex-1 flex flex-col gap-3 relative z-10">
+      <div className="flex-1 flex flex-col gap-3 relative z-10 overflow-y-auto pb-4">
 
         {chips && chips.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-1">
@@ -618,7 +618,7 @@ function CommunityScreen({ complaint, onTrack, onBack, t }: {
   const similarCount = Math.floor(pct * 3.5); // Mock number for nearby reports
 
   return (
-    <div className="flex flex-col h-full px-6 pt-10 pb-6 bg-transparent relative z-10">
+    <div className="flex flex-col h-full px-6 pt-10 pb-6 bg-transparent relative z-10 overflow-y-auto">
       <button onClick={onBack} className="absolute left-6 top-8 w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors">
         <ArrowLeft className="w-4 h-4" />
       </button>
@@ -1477,7 +1477,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
         </div>
 
         {/* Screen content */}
-        <div className="absolute inset-0 pt-[calc(env(safe-area-inset-top,16px)+40px)] sm:pt-10 pb-[env(safe-area-inset-bottom,64px)] overflow-hidden">
+        <div className="absolute inset-0 pt-[calc(env(safe-area-inset-top,16px)+40px)] sm:pt-10 pb-[calc(env(safe-area-inset-bottom,16px)+70px)] overflow-hidden flex flex-col">
           {activeComplaintId && (
             <ComplaintDetailScreen 
               complaint={complaints.find(c => c.id === activeComplaintId)!}
