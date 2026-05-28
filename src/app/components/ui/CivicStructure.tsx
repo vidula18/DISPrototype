@@ -174,19 +174,26 @@ export function CivicStructure({
   
   const units = useMemo(() => {
     const clusterCounts: Record<string, number> = {};
-    return complaints.map((c) => {
+    const MULTIPLIER = 8; // Each complaint spawns 8 cubes to simulate community volume
+
+    return complaints.flatMap((c) => {
       if (!clusterCounts[c.cluster_id]) clusterCounts[c.cluster_id] = 0;
-      const index = clusterCounts[c.cluster_id]++;
-      const pos = getGridPosition(c.cluster_id, index, systemState, activeClusterId);
       
-      return {
-        id: c.id,
-        cluster: c.cluster_id,
-        color: CLUSTER_COLORS[c.cluster_id] || DEFAULT_COLOR,
-        ...pos,
-        isNew: c.id === recentlyAddedId,
-        delay: (index * 0.05) + (Math.random() * 0.1)
-      };
+      const generated = [];
+      for (let i = 0; i < MULTIPLIER; i++) {
+        const index = clusterCounts[c.cluster_id]++;
+        const pos = getGridPosition(c.cluster_id, index, systemState, activeClusterId);
+        
+        generated.push({
+          id: `${c.id}-${i}`,
+          cluster: c.cluster_id,
+          color: CLUSTER_COLORS[c.cluster_id] || DEFAULT_COLOR,
+          ...pos,
+          isNew: c.id === recentlyAddedId,
+          delay: (index * 0.02) + (Math.random() * 0.1)
+        });
+      }
+      return generated;
     });
   }, [complaints, systemState, activeClusterId, recentlyAddedId]);
 

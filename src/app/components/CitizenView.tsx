@@ -3,7 +3,7 @@ import {
   Send, MapPin, ArrowLeft, Users, Clock, CheckCircle2,
   CircleDot, Loader2, AlertCircle, Mic, ChevronRight, SkipForward,
   FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye, Plus,
-  Map, Trash2, Droplet
+  Map, Trash2, Droplet, Sparkles
 } from "lucide-react";
 import type { Complaint, ComplaintStatus, StructuredOutput } from "../App";
 import { getCluster, inferIntent, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
@@ -782,16 +782,67 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
 // ─── Updates Tab ─────────────────────────────────────────────────────────────
 
 function UpdatesTab({ complaints }: { complaints: Complaint[] }) {
-  const sorted = [...complaints].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
-
-  const UPDATE_ICONS: Record<ComplaintStatus, string> = {
-    "Open": "🟡",
-    "Assigned": "🔵",
-    "In Progress": "🟠",
-    "Resolved": "✅",
+  type UpdateEvent = {
+    id: string;
+    complaintId: string;
+    type: "submitted" | "vision" | "status";
+    title: string;
+    description: string;
+    time: Date;
+    Icon: any;
+    colorClass: string;
+    bgClass: string;
   };
+
+  const events: UpdateEvent[] = complaints.flatMap((c) => {
+    const list: UpdateEvent[] = [];
+    const baseTime = new Date(c.timestamp).getTime();
+    
+    list.push({
+      id: `${c.id}-submitted`,
+      complaintId: c.id,
+      type: "submitted",
+      title: "Complaint Logged",
+      description: c.text_input,
+      time: new Date(baseTime),
+      Icon: FileText,
+      colorClass: "text-gray-600",
+      bgClass: "bg-gray-100 border-gray-200"
+    });
+
+    if (c.structured_output) {
+      list.push({
+        id: `${c.id}-vision`,
+        complaintId: c.id,
+        type: "vision",
+        title: "Vision Added",
+        description: c.structured_output.desired_outcome,
+        time: new Date(baseTime + 60000), // simulate 1 min later
+        Icon: Sparkles,
+        colorClass: "text-[#FFA958]",
+        bgClass: "bg-[#FFA958]/10 border-[#FFA958]/30"
+      });
+    }
+
+    if (c.status !== "Open") {
+      const cfg = STATUS_CONFIG[c.status];
+      list.push({
+        id: `${c.id}-status`,
+        complaintId: c.id,
+        type: "status",
+        title: `Status: ${c.status}`,
+        description: c.assigned_department ? `Handled by ${c.assigned_department}` : "Updated by municipal system",
+        time: new Date(baseTime + 3600000), // simulate 1 hour later
+        Icon: cfg.Icon,
+        colorClass: cfg.color,
+        bgClass: cfg.bg
+      });
+    }
+    
+    return list;
+  });
+
+  const sortedEvents = events.sort((a, b) => b.time.getTime() - a.time.getTime());
 
   return (
     <div className="flex flex-col h-full">
@@ -800,52 +851,36 @@ function UpdatesTab({ complaints }: { complaints: Complaint[] }) {
         <p className="text-xs text-black/40 mt-0.5">Live status from municipal system</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-3">
-        {sorted.length === 0 && (
+      <div className="flex-1 overflow-y-auto px-5 pb-4">
+        {sortedEvents.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
             <Bell className="w-10 h-10 text-black/15" />
-            <p className="text-sm text-black/40">No complaints yet.<br />Submit one to see updates here.</p>
+            <p className="text-sm text-black/40">No activity yet.<br />Submit a complaint to see updates.</p>
           </div>
         )}
 
-        {sorted.map((c) => {
-          const cfg = STATUS_CONFIG[c.status];
-          const Icon = cfg.Icon;
-          return (
-            <div key={c.id} className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${cfg.bg}`}>
-                  <Icon className={`w-4 h-4 ${cfg.color} ${c.status === "In Progress" ? "animate-spin" : ""}`} />
+        <div className="relative pl-4 py-2">
+          {sortedEvents.length > 0 && (
+            <div className="absolute top-4 bottom-4 left-[27px] w-0.5 bg-black/5" />
+          )}
+
+          <div className="flex flex-col gap-6">
+            {sortedEvents.map((evt) => (
+              <div key={evt.id} className="relative pl-10">
+                <div className={`absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center border-2 border-[#faf3eb] shadow-sm z-10 ${evt.bgClass}`}>
+                  <evt.Icon className={`w-3 h-3 ${evt.colorClass}`} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-black leading-snug line-clamp-2">{c.text_input}</p>
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
-                      {UPDATE_ICONS[c.status]} {c.status}
-                    </span>
-                    {c.assigned_department && (
-                      <span className="text-[10px] text-black/40 font-medium truncate">→ {c.assigned_department}</span>
-                    )}
+                <div className="bg-white/80 rounded-2xl border border-black/8 p-3 shadow-sm">
+                  <div className="flex items-start justify-between mb-1.5">
+                    <p className="text-xs font-extrabold text-black">{evt.title}</p>
+                    <span className="text-[10px] text-black/40 font-medium">{timeAgo(evt.time.toISOString())}</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5 text-[10px] text-black/30">
-                    <MapPin className="w-3 h-3 shrink-0" />
-                    <span className="truncate">{c.location}</span>
-                    <span>·</span>
-                    <Clock className="w-3 h-3 shrink-0" />
-                    <span>{timeAgo(c.timestamp)}</span>
-                  </div>
+                  <p className="text-[11px] text-black/70 leading-snug line-clamp-2">{evt.description}</p>
                 </div>
               </div>
-
-              {c.structured_output && (
-                <div className="mt-3 pt-3 border-t border-black/5 flex items-center gap-1.5">
-                  <span className="text-[10px] text-[#FFA958] font-bold">✦ Vision submitted</span>
-                  <span className="text-[10px] text-black/25">· Visible to officers</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1255,27 +1290,26 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
   }
 
   return (
-    <div className="size-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+    <div className="w-full h-[100dvh] flex items-center justify-center bg-white sm:bg-gray-100 sm:p-4 overflow-hidden">
       {/* Phone mockup */}
       <div
-        className="relative overflow-hidden shadow-2xl"
-        style={{ width: 390, height: 780, borderRadius: 40, background: "#faf3eb", border: "10px solid #1a1a1a", flexShrink: 0 }}
+        className="relative overflow-hidden sm:shadow-2xl w-full h-full sm:w-[390px] sm:h-[780px] sm:rounded-[40px] bg-[#faf3eb] sm:border-[10px] sm:border-[#1a1a1a] flex-shrink-0"
       >
-        {/* Notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[#1a1a1a] rounded-b-2xl z-20" />
+        {/* Notch - hidden on mobile */}
+        <div className="hidden sm:block absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[#1a1a1a] rounded-b-2xl z-20" />
 
         {/* Status bar */}
-        <div className="absolute top-0 left-0 right-0 h-10 flex items-end justify-between px-6 pb-1 z-20">
-          <span className="text-[11px] font-semibold text-black">9:41</span>
+        <div className="absolute top-0 left-0 right-0 pt-[env(safe-area-inset-top,16px)] sm:pt-0 sm:h-10 flex items-center sm:items-end justify-between px-6 pb-2 sm:pb-1 z-20">
+          <span className="hidden sm:block text-[11px] font-semibold text-black">9:41</span>
           <button
             onClick={() => setLang((l) => (l === "en" ? "hi" : "en"))}
-            className="flex items-center bg-black/10 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-black/60 gap-1"
+            className="flex items-center bg-black/10 rounded-full px-3 py-1 mt-2 sm:mt-0 text-[11px] font-bold text-black/60 gap-1 sm:ml-auto"
           >
             <span className={lang === "en" ? "text-black" : "text-black/40"}>EN</span>
             <span className="text-black/20">|</span>
             <span className={lang === "hi" ? "text-black" : "text-black/40"}>हि</span>
           </button>
-          <div className="flex items-center gap-1 text-black">
+          <div className="hidden sm:flex items-center gap-1 text-black ml-auto">
             <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
               <rect x="0" y="4" width="3" height="7" rx="1" fill="currentColor" opacity="0.4" />
               <rect x="4.5" y="2.5" width="3" height="8.5" rx="1" fill="currentColor" opacity="0.6" />
@@ -1291,7 +1325,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
         </div>
 
         {/* Screen content */}
-        <div className="absolute inset-0 pt-10 pb-16 overflow-hidden">
+        <div className="absolute inset-0 pt-[calc(env(safe-area-inset-top,16px)+40px)] sm:pt-10 pb-[env(safe-area-inset-bottom,64px)] overflow-hidden">
           {((tab === "report" && (screen === "landing" || screen === "community")) || tab === "community") && (
             <CivicStructure 
               complaints={complaints} 
