@@ -179,30 +179,19 @@ function LandingScreen({
 
   return (
     <div className="flex flex-col h-full px-6 pt-10 pb-10 bg-transparent relative z-10 overflow-y-auto">
-      <div className="mt-8 text-center flex flex-col items-center">
-        <h1 className="font-extrabold text-black text-4xl tracking-tight drop-shadow-sm opacity-90">
+      <div className="mt-4 text-center">
+        <h1 className="font-extrabold text-black text-3xl tracking-tight drop-shadow-sm opacity-90">
           Sanchaar
         </h1>
-        <p className="text-sm font-medium text-black/60 mt-3 max-w-[280px] mx-auto leading-relaxed">
+        <p className="text-sm font-medium text-black/60 mt-2 max-w-[250px] mx-auto leading-relaxed">
           {hasComplaints 
             ? "A living snapshot of civic activity." 
             : "Your voice shapes the city's priorities. File a complaint to watch it join others and grow into a collective call for action."}
         </p>
-        
-        <button
-          onClick={onStart}
-          aria-label="Add complaint"
-          className="mt-8 flex items-center gap-3 bg-[#FFA958] text-black px-8 py-4 rounded-full shadow-xl shadow-[#FFA958]/30 active:scale-95 transition-all hover:bg-[#FFA958]/90"
-        >
-          <div className="w-8 h-8 bg-black/10 rounded-full flex items-center justify-center">
-            <Plus className="w-5 h-5 text-black" />
-          </div>
-          <span className="font-bold text-base tracking-wide">Add Complaint</span>
-        </button>
       </div>
 
       {activeComplaint && cfg && onGoToUpdate && (
-        <div className="mt-12 bg-white/90 backdrop-blur rounded-2xl border border-black/10 p-4 shadow-lg cursor-pointer hover:border-black/20 active:scale-95 transition-all text-left mx-auto w-full max-w-[320px]" onClick={onGoToUpdate}>
+        <div className="mt-8 bg-white/90 backdrop-blur rounded-2xl border border-black/10 p-4 shadow-lg cursor-pointer hover:border-black/20 active:scale-95 transition-all text-left" onClick={onGoToUpdate}>
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-sm ${cfg.bg}`}>
               <cfg.Icon className={`w-3 h-3 ${cfg.color}`} />
@@ -215,8 +204,21 @@ function LandingScreen({
         </div>
       )}
 
+      <div className="mt-16 flex justify-center relative z-20">
+        <button
+          onClick={onStart}
+          aria-label="Add complaint"
+          className="flex items-center gap-3 bg-[#FFA958] text-black px-6 py-4 rounded-full shadow-2xl shadow-[#FFA958]/30 active:scale-95 transition-all hover:bg-[#FFA958]/90"
+        >
+          <div className="w-8 h-8 bg-black/10 rounded-full flex items-center justify-center">
+            <Plus className="w-5 h-5 text-black" />
+          </div>
+          <span className="font-bold text-base tracking-wide">Add complaint</span>
+        </button>
+      </div>
+
       {/* Spacer to let the 3D cubes shine at the bottom */}
-      <div className="flex-1 pointer-events-none min-h-[150px]" />
+      <div className="flex-1 min-h-[220px] pointer-events-none" />
     </div>
   );
 }
