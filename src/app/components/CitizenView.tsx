@@ -566,7 +566,7 @@ function ReflectionCard({
           </div>
         </div>
 
-        <div className="flex gap-2 mt-auto">
+        <div className="flex gap-2 mt-4 mb-auto">
           <button
             onClick={onSkip}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-semibold text-black/40 hover:text-black/60 border border-black/10 transition-colors"
