@@ -1914,6 +1914,8 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                 key={id}
                 onClick={() => {
                   setTab(id);
+                  setActiveComplaintId(null);
+                  setShowMyComplaints(false);
                   if (id === "report") {
                     // If returning to report tab while in reflection flow, stay there
                   }
