@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CitizenView } from "./components/CitizenView";
 
-export type ComplaintStatus = "Open" | "Assigned" | "In Progress" | "Resolved";
+export type ComplaintStatus = "Submitted" | "Acknowledged" | "Grouped" | "Routed" | "Under Review" | "Action Initiated" | "Resolved";
 
 export interface StructuredOutput {
   issue: string;
@@ -98,7 +98,7 @@ const SEED: Complaint[] = [
     category: "Infrastructure",
     location: "MG Road, Ward 12",
     tags: ["pothole", "roads", "monsoon"],
-    status: "In Progress",
+    status: "Action Initiated",
     assigned_department: "Roads Department",
     assigned_officer: "Officer A",
     cluster_id: "Road Issues",
@@ -118,7 +118,7 @@ const SEED: Complaint[] = [
     category: "Infrastructure",
     location: "School Road, Ward 12",
     tags: ["pothole", "roads", "safety"],
-    status: "Open",
+    status: "Submitted",
     assigned_department: null,
     assigned_officer: null,
     cluster_id: "Road Issues",
@@ -130,7 +130,7 @@ const SEED: Complaint[] = [
     category: "Sanitation",
     location: "Sector 7, Ward 12",
     tags: ["garbage", "sanitation", "health"],
-    status: "Assigned",
+    status: "Routed",
     assigned_department: "Sanitation Department",
     assigned_officer: "Officer B",
     cluster_id: "Sanitation",
@@ -149,7 +149,7 @@ const SEED: Complaint[] = [
     category: "Utilities",
     location: "Colony Block C, Ward 12",
     tags: ["water", "supply", "shortage"],
-    status: "Open",
+    status: "Submitted",
     assigned_department: null,
     assigned_officer: null,
     cluster_id: "Water Supply",
@@ -161,7 +161,7 @@ const SEED: Complaint[] = [
     category: "Drainage",
     location: "Market Street, Ward 12",
     tags: ["water", "drain", "flooding"],
-    status: "Assigned",
+    status: "Grouped",
     assigned_department: "Water Supply Department",
     assigned_officer: "Officer C",
     cluster_id: "Water Supply",
@@ -191,7 +191,7 @@ export default function App() {
       category: "Uncategorized",
       location: location || "Ward 12",
       tags: [],
-      status: "Open",
+      status: "Submitted",
       assigned_department: null,
       assigned_officer: null,
       cluster_id: getCluster(text),

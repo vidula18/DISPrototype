@@ -170,17 +170,39 @@ interface Props {
 
 // ─── Screen Components ────────────────────────────────────────────────────────
 
-function LandingScreen({ onStart, t }: { onStart: () => void, t: Record<string, string> }) {
+function LandingScreen({ 
+  onStart, hasComplaints, activeComplaint, onGoToUpdate, t 
+}: { 
+  onStart: () => void, hasComplaints: boolean, activeComplaint?: Complaint | null, onGoToUpdate?: () => void, t: Record<string, string> 
+}) {
+  const cfg = activeComplaint ? STATUS_CONFIG[activeComplaint.status] : null;
+
   return (
     <div className="flex flex-col h-full px-6 pt-10 pb-10 bg-transparent relative z-10">
       <div className="mb-auto mt-4 text-center">
         <h1 className="font-extrabold text-black text-3xl tracking-tight drop-shadow-sm opacity-90">
           Sanchaar
         </h1>
-        <p className="text-sm font-medium text-black/60 mt-2">
-          A living snapshot of civic activity.
+        <p className="text-sm font-medium text-black/60 mt-2 max-w-[250px] mx-auto leading-relaxed">
+          {hasComplaints 
+            ? "A living snapshot of civic activity." 
+            : "Your voice shapes the city's priorities. File a complaint to watch it join others and grow into a collective call for action."}
         </p>
       </div>
+
+      {activeComplaint && cfg && onGoToUpdate && (
+        <div className="mt-4 bg-white/90 backdrop-blur rounded-2xl border border-black/10 p-4 shadow-lg cursor-pointer hover:border-black/20 active:scale-95 transition-all text-left" onClick={onGoToUpdate}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-sm ${cfg.bg}`}>
+              <cfg.Icon className={`w-3 h-3 ${cfg.color}`} />
+            </div>
+            <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Latest Update</p>
+          </div>
+          <p className="text-sm font-extrabold text-black leading-snug mb-1">{cfg.label}</p>
+          <p className="text-[11px] text-black/60 leading-relaxed">{cfg.desc}</p>
+          <p className="text-[9px] text-black/30 mt-2 truncate border-t border-black/5 pt-2">Regarding: {activeComplaint.text_input}</p>
+        </div>
+      )}
 
       {/* Massive spacer to let the 3D cubes shine */}
       <div className="flex-1 min-h-[350px] pointer-events-none" />
@@ -213,11 +235,14 @@ function timeAgo(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg: string; Icon: typeof CircleDot }> = {
-  Open: { label: "Open", color: "text-amber-700", bg: "bg-amber-50 border-amber-200", Icon: AlertCircle },
-  Assigned: { label: "Assigned", color: "text-blue-700", bg: "bg-blue-50 border-blue-200", Icon: CircleDot },
-  "In Progress": { label: "In Progress", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", Icon: Loader2 },
-  Resolved: { label: "Resolved", color: "text-green-700", bg: "bg-green-50 border-green-200", Icon: CheckCircle2 },
+const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg: string; Icon: any; desc: string }> = {
+  "Submitted": { label: "Submitted", color: "text-gray-700", bg: "bg-gray-100 border-gray-200", Icon: FileText, desc: "Your complaint has been logged in the system." },
+  "Acknowledged": { label: "Acknowledged", color: "text-blue-700", bg: "bg-blue-50 border-blue-200", Icon: CheckCircle2, desc: "Received and acknowledged by the civic system." },
+  "Grouped": { label: "Grouped", color: "text-purple-700", bg: "bg-purple-50 border-purple-200", Icon: Users, desc: "Similar complaints from your ward have been linked to this issue." },
+  "Routed": { label: "Routed", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", Icon: MapPin, desc: "Sent to the responsible civic authority for review." },
+  "Under Review": { label: "Under Review", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200", Icon: Eye, desc: "The issue is currently being assessed by officers." },
+  "Action Initiated": { label: "Action Initiated", color: "text-amber-700", bg: "bg-amber-50 border-amber-200", Icon: Loader2, desc: "Initial action and on-ground work has started." },
+  "Resolved": { label: "Resolved", color: "text-green-700", bg: "bg-green-50 border-green-200", Icon: CheckCircle2, desc: "The complaint has been marked resolved." },
 };
 
 const CLUSTER_ICON: Record<string, React.ElementType> = {
@@ -609,16 +634,50 @@ function CommunityScreen({ complaint, onTrack, onBack, t }: {
 
       {/* Stats Section */}
       <div className="flex flex-col gap-3 mt-auto shrink-0">
-        
-        {/* Structured Side-by-Side Stats */}
-        <div className="flex gap-3 mb-4">
-          <div className="flex-1 bg-gradient-to-br from-[#FFA958]/90 to-[#FFA958] rounded-2xl border border-[#FFA958]/50 p-4 shadow-md">
-             <p className="text-3xl font-black text-black leading-none mb-1.5">{pct}%</p>
-             <p className="text-[10px] font-bold text-black/80 uppercase tracking-wide leading-snug">{t.community_stat_pct}</p>
+        {/* Progression & Legend Section */}
+        <div className="bg-white/90 backdrop-blur rounded-3xl p-5 border border-black/10 shadow-lg">
+          {/* Progression */}
+          <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex flex-col items-center gap-1 text-center flex-1">
+              <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center border border-orange-200">
+                <FileText className="w-3.5 h-3.5 text-orange-600" />
+              </div>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Logged</p>
+            </div>
+            <div className="w-4 h-[1px] bg-black/10" />
+            <div className="flex flex-col items-center gap-1 text-center flex-1">
+              <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center border border-purple-200">
+                <Users className="w-3.5 h-3.5 text-purple-600" />
+              </div>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Grouped</p>
+            </div>
+            <div className="w-4 h-[1px] bg-black/10" />
+            <div className="flex flex-col items-center gap-1 text-center flex-1">
+              <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
+                <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
+              </div>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Elevated</p>
+            </div>
+            <div className="w-4 h-[1px] bg-black/10" />
+            <div className="flex flex-col items-center gap-1 text-center flex-1">
+              <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center border border-green-200">
+                <MapPin className="w-3.5 h-3.5 text-green-600" />
+              </div>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Routed</p>
+            </div>
           </div>
-          <div className="flex-1 bg-white/90 backdrop-blur rounded-2xl border border-black/10 p-4 shadow-sm">
-             <p className="text-2xl font-black text-black/80 leading-none mb-1.5">{similarCount}</p>
-             <p className="text-[10px] font-bold text-black/50 uppercase tracking-wide leading-snug">{t.community_stat_similar}</p>
+          
+          <p className="text-[11px] text-black/70 leading-relaxed text-center mb-4">
+            Your complaint just joined <span className="font-bold text-black">{similarCount} others</span> in the {complaint.cluster_id} cluster. 
+            The structure above grows as more citizens report issues, elevating its priority for routing.
+          </p>
+
+          <div className="bg-black/5 rounded-2xl p-3 border border-black/5">
+            <ul className="text-[10px] text-black/60 font-medium space-y-1.5 list-disc pl-3">
+              <li><span className="font-bold text-black/80">1 Cube:</span> Represents 1 local complaint.</li>
+              <li><span className="font-bold text-black/80">Clusters:</span> Similar complaints grouped together.</li>
+              <li><span className="font-bold text-black/80">Density:</span> Indicates stronger community concentration.</li>
+            </ul>
           </div>
         </div>
 
@@ -766,7 +825,7 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
 
 // ─── Updates Tab ─────────────────────────────────────────────────────────────
 
-function UpdatesTab({ complaints }: { complaints: Complaint[] }) {
+function UpdatesTab({ complaints, onSelect }: { complaints: Complaint[], onSelect: (id: string) => void }) {
   type UpdateEvent = {
     id: string;
     complaintId: string;
@@ -777,50 +836,58 @@ function UpdatesTab({ complaints }: { complaints: Complaint[] }) {
     Icon: any;
     colorClass: string;
     bgClass: string;
+    originalTitle: string;
   };
+
+  const STAGES: ComplaintStatus[] = [
+    "Submitted", "Acknowledged", "Grouped", "Routed", 
+    "Under Review", "Action Initiated", "Resolved"
+  ];
 
   const events: UpdateEvent[] = complaints.flatMap((c) => {
     const list: UpdateEvent[] = [];
     const baseTime = new Date(c.timestamp).getTime();
+    const currentIndex = STAGES.indexOf(c.status);
     
-    list.push({
-      id: `${c.id}-submitted`,
-      complaintId: c.id,
-      type: "submitted",
-      title: "Complaint Logged",
-      description: c.text_input,
-      time: new Date(baseTime),
-      Icon: FileText,
-      colorClass: "text-gray-600",
-      bgClass: "bg-gray-100 border-gray-200"
-    });
+    for (let i = 0; i <= currentIndex; i++) {
+      const stage = STAGES[i];
+      const cfg = STATUS_CONFIG[stage];
+      if (!cfg) continue;
+      
+      let title = stage;
+      let desc = cfg.desc;
+      if (stage === "Submitted") {
+        desc = `Complaint logged: ${c.text_input}`;
+      } else if (stage === "Routed" && c.assigned_department) {
+        desc = `Sent to ${c.assigned_department} for review.`;
+      }
+      
+      list.push({
+        id: `${c.id}-${stage}`,
+        complaintId: c.id,
+        type: "status",
+        title: title,
+        description: desc,
+        time: new Date(baseTime + (i * 3600000)), // 1 hour per stage simulated
+        Icon: cfg.Icon,
+        colorClass: cfg.color,
+        bgClass: cfg.bg,
+        originalTitle: c.text_input
+      });
+    }
 
     if (c.structured_output) {
       list.push({
         id: `${c.id}-vision`,
         complaintId: c.id,
         type: "vision",
-        title: "Vision Added",
+        title: "Vision Contributed",
         description: c.structured_output.desired_outcome,
-        time: new Date(baseTime + 60000), // simulate 1 min later
+        time: new Date(baseTime + 60000), 
         Icon: Sparkles,
         colorClass: "text-[#FFA958]",
-        bgClass: "bg-[#FFA958]/10 border-[#FFA958]/30"
-      });
-    }
-
-    if (c.status !== "Open") {
-      const cfg = STATUS_CONFIG[c.status];
-      list.push({
-        id: `${c.id}-status`,
-        complaintId: c.id,
-        type: "status",
-        title: `Status: ${c.status}`,
-        description: c.assigned_department ? `Handled by ${c.assigned_department}` : "Updated by municipal system",
-        time: new Date(baseTime + 3600000), // simulate 1 hour later
-        Icon: cfg.Icon,
-        colorClass: cfg.color,
-        bgClass: cfg.bg
+        bgClass: "bg-[#FFA958]/10 border-[#FFA958]/30",
+        originalTitle: c.text_input
       });
     }
     
@@ -851,16 +918,21 @@ function UpdatesTab({ complaints }: { complaints: Complaint[] }) {
 
           <div className="flex flex-col gap-6">
             {sortedEvents.map((evt) => (
-              <div key={evt.id} className="relative pl-10">
+              <div 
+                key={evt.id} 
+                className="relative pl-10 cursor-pointer active:scale-[0.98] transition-transform"
+                onClick={() => onSelect(evt.complaintId)}
+              >
                 <div className={`absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center border-2 border-[#faf3eb] shadow-sm z-10 ${evt.bgClass}`}>
                   <evt.Icon className={`w-3 h-3 ${evt.colorClass}`} />
                 </div>
-                <div className="bg-white/80 rounded-2xl border border-black/8 p-3 shadow-sm">
+                <div className="bg-white/80 rounded-2xl border border-black/8 p-3 shadow-sm hover:border-black/15 transition-colors">
                   <div className="flex items-start justify-between mb-1.5">
                     <p className="text-xs font-extrabold text-black">{evt.title}</p>
                     <span className="text-[10px] text-black/40 font-medium">{timeAgo(evt.time.toISOString())}</span>
                   </div>
-                  <p className="text-[11px] text-black/70 leading-snug line-clamp-2">{evt.description}</p>
+                  <p className="text-[11px] text-black/70 leading-snug mb-1">{evt.description}</p>
+                  <p className="text-[9px] text-black/30 font-medium truncate pt-1 border-t border-black/5">Regarding: {evt.originalTitle}</p>
                 </div>
               </div>
             ))}
@@ -1055,7 +1127,7 @@ function CommunityTab({ complaints }: { complaints: Complaint[] }) {
 
 // ─── Profile Tab ─────────────────────────────────────────────────────────────
 
-function ProfileTab({ complaints }: { complaints: Complaint[] }) {
+function ProfileTab({ complaints, onSelect }: { complaints: Complaint[], onSelect: (id: string) => void }) {
   const myComplaints = complaints.slice(0, 4);
   const resolvedCount = complaints.filter((c) => c.status === "Resolved").length;
   const visionCount = complaints.filter((c) => c.structured_output).length;
@@ -1152,7 +1224,11 @@ function ProfileTab({ complaints }: { complaints: Complaint[] }) {
             {myComplaints.map((c) => {
               const cfg = STATUS_CONFIG[c.status];
               return (
-                <div key={c.id} className="bg-white/80 rounded-xl border border-black/8 p-3 shadow-sm flex items-start gap-2.5">
+                <div 
+                  key={c.id} 
+                  className="bg-white/80 rounded-xl border border-black/8 p-3 shadow-sm flex items-start gap-2.5 cursor-pointer hover:border-black/15 active:scale-[0.98] transition-all"
+                  onClick={() => onSelect(c.id)}
+                >
                   <div>
                     <p className="text-xs font-semibold text-black/70 leading-snug line-clamp-2">{c.text_input}</p>
                     <div className="flex items-center gap-2 mt-1.5">
@@ -1164,6 +1240,96 @@ function ProfileTab({ complaints }: { complaints: Complaint[] }) {
                         <span className="text-[10px] text-[#FFA958] font-bold">✦ Vision</span>
                       )}
                     </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Complaint Detail Screen ──────────────────────────────────────────────────
+
+function ComplaintDetailScreen({ complaint, onBack, t }: { complaint: Complaint, onBack: () => void, t: Record<string, string> }) {
+  const STAGES: ComplaintStatus[] = [
+    "Submitted", "Acknowledged", "Grouped", "Routed", 
+    "Under Review", "Action Initiated", "Resolved"
+  ];
+  
+  const currentIndex = STAGES.indexOf(complaint.status);
+  const baseTime = new Date(complaint.timestamp).getTime();
+  const currentCfg = STATUS_CONFIG[complaint.status];
+
+  return (
+    <div className="absolute inset-0 bg-[#faf3eb] z-50 flex flex-col pt-4">
+      <div className="px-6 flex items-center justify-between pb-4">
+        <button onClick={onBack} className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors active:scale-95">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <span className="text-xs font-bold text-black/30 tracking-widest uppercase">Details</span>
+        <div className="w-8" />
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 pb-20">
+        <div className="mb-6">
+          <p className="text-lg font-extrabold text-black leading-snug mb-3">{complaint.text_input}</p>
+          
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${currentCfg.bg} ${currentCfg.color} flex items-center gap-1.5`}>
+              <currentCfg.Icon className="w-3.5 h-3.5" />
+              {currentCfg.label}
+            </span>
+            <span className="text-[11px] font-semibold text-black/40 bg-black/5 px-3 py-1 rounded-full">
+              {timeAgo(complaint.timestamp)}
+            </span>
+          </div>
+
+          <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4 flex items-start gap-3">
+            <div className="mt-0.5 bg-purple-100 w-6 h-6 rounded-full flex items-center justify-center shrink-0">
+              <Users className="w-3.5 h-3.5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-xs font-extrabold text-purple-900 mb-0.5">Community Grouping</p>
+              <p className="text-[11px] text-purple-700 leading-snug">
+                This complaint is part of the <span className="font-bold">{complaint.cluster_id}</span> cluster. It has been prioritized along with similar local issues.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative pl-4 py-2">
+          <div className="absolute top-4 bottom-4 left-[27px] w-0.5 bg-black/5" />
+          
+          <div className="flex flex-col gap-6">
+            {/* Generate timeline from newest (current) to oldest (Submitted) */}
+            {Array.from({ length: currentIndex + 1 }).map((_, i) => {
+              const stageIdx = currentIndex - i; // reverse order
+              const stage = STAGES[stageIdx];
+              const cfg = STATUS_CONFIG[stage];
+              let desc = cfg.desc;
+              if (stage === "Submitted") desc = `Complaint logged: ${complaint.text_input}`;
+              else if (stage === "Routed" && complaint.assigned_department) desc = `Sent to ${complaint.assigned_department} for review.`;
+
+              const isLatest = stageIdx === currentIndex;
+
+              return (
+                <div key={stage} className="relative pl-10">
+                  <div className={`absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center border-2 border-[#faf3eb] shadow-sm z-10 ${cfg.bg}`}>
+                    <cfg.Icon className={`w-3 h-3 ${cfg.color}`} />
+                  </div>
+                  <div className={`rounded-2xl border p-3 ${isLatest ? 'bg-white shadow-md border-black/15' : 'bg-white/60 border-black/5 shadow-sm'}`}>
+                    <div className="flex items-start justify-between mb-1">
+                      <p className={`text-xs font-extrabold ${isLatest ? 'text-black' : 'text-black/60'}`}>{cfg.label}</p>
+                      <span className="text-[10px] text-black/40 font-medium">
+                        {timeAgo(new Date(baseTime + (stageIdx * 3600000)).toISOString())}
+                      </span>
+                    </div>
+                    <p className={`text-[11px] leading-snug ${isLatest ? 'text-black/80 font-medium' : 'text-black/50'}`}>
+                      {desc}
+                    </p>
                   </div>
                 </div>
               );
@@ -1189,6 +1355,7 @@ const NAV_TABS: Array<{ id: Tab; label: string; Icon: typeof FileText }> = [
 export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: Props) {
   const [tab, setTab] = useState<Tab>("report");
   const [screen, setScreen] = useState<Screen>("landing");
+  const [activeComplaintId, setActiveComplaintId] = useState<string | null>(null);
   const [lang, setLang] = useState<Lang>("en");
   const [inputText, setInputText] = useState("");
   const [location, setLocation] = useState("");
@@ -1311,7 +1478,14 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
 
         {/* Screen content */}
         <div className="absolute inset-0 pt-[calc(env(safe-area-inset-top,16px)+40px)] sm:pt-10 pb-[env(safe-area-inset-bottom,64px)] overflow-hidden">
-          {((tab === "report" && (screen === "landing" || screen === "community")) || tab === "community") && (
+          {activeComplaintId && (
+            <ComplaintDetailScreen 
+              complaint={complaints.find(c => c.id === activeComplaintId)!}
+              onBack={() => setActiveComplaintId(null)}
+              t={t}
+            />
+          )}
+          {((tab === "report" && (screen === "landing" || screen === "community")) || tab === "community") && !activeComplaintId && (
             <CivicStructure 
               complaints={complaints} 
               systemState={systemState} 
@@ -1323,7 +1497,16 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
           {tab === "report" && (
             <>
               {screen === "landing" && (
-                <LandingScreen onStart={() => setScreen("home")} t={t} />
+                <LandingScreen 
+                  onStart={() => setScreen("home")} 
+                  hasComplaints={complaints.length > 0}
+                  activeComplaint={complaints.find(c => c.status !== "Submitted")}
+                  onGoToUpdate={() => {
+                    const latestMoved = complaints.find(c => c.status !== "Submitted");
+                    if (latestMoved) setActiveComplaintId(latestMoved.id);
+                  }}
+                  t={t} 
+                />
               )}
               {screen === "home" && (
                 <HomeScreen
@@ -1405,9 +1588,9 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
             </>
           )}
 
-          {tab === "updates" && <UpdatesTab complaints={complaints} />}
+          {tab === "updates" && <UpdatesTab complaints={complaints} onSelect={setActiveComplaintId} />}
           {tab === "community" && <CommunityTab complaints={complaints} />}
-          {tab === "profile" && <ProfileTab complaints={complaints} />}
+          {tab === "profile" && <ProfileTab complaints={complaints} onSelect={setActiveComplaintId} />}
         </div>
 
         {/* Bottom navigation bar */}

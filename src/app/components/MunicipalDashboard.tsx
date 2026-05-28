@@ -16,11 +16,14 @@ interface Props {
 
 type DashView = "missions" | "insights" | "timeline";
 
-const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg: string; dot: string; Icon: typeof CircleDot }> = {
-  Open: { label: "Open", color: "text-amber-700", bg: "bg-amber-50 border-amber-200", dot: "bg-amber-400", Icon: AlertCircle },
-  Assigned: { label: "Assigned", color: "text-blue-700", bg: "bg-blue-50 border-blue-200", dot: "bg-blue-400", Icon: CircleDot },
-  "In Progress": { label: "In Progress", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", dot: "bg-orange-400", Icon: Loader2 },
-  Resolved: { label: "Resolved", color: "text-green-700", bg: "bg-green-50 border-green-200", dot: "bg-green-400", Icon: CheckCircle2 },
+const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg: string; dot: string; Icon: any }> = {
+  "Submitted": { label: "Submitted", color: "text-gray-700", bg: "bg-gray-50 border-gray-200", dot: "bg-gray-400", Icon: FileText },
+  "Acknowledged": { label: "Acknowledged", color: "text-blue-700", bg: "bg-blue-50 border-blue-200", dot: "bg-blue-400", Icon: CheckCircle2 },
+  "Grouped": { label: "Grouped", color: "text-purple-700", bg: "bg-purple-50 border-purple-200", dot: "bg-purple-400", Icon: Users },
+  "Routed": { label: "Routed", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", dot: "bg-orange-400", Icon: MapPin },
+  "Under Review": { label: "Under Review", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200", dot: "bg-indigo-400", Icon: Eye },
+  "Action Initiated": { label: "Action Initiated", color: "text-amber-700", bg: "bg-amber-50 border-amber-200", dot: "bg-amber-400", Icon: Loader2 },
+  "Resolved": { label: "Resolved", color: "text-green-700", bg: "bg-green-50 border-green-200", dot: "bg-green-400", Icon: CheckCircle2 },
 };
 
 const CLUSTER_ICON: Record<string, React.ElementType> = {
