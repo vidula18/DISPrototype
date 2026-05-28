@@ -3,7 +3,7 @@ import {
   Send, MapPin, ArrowLeft, Users, Clock, CheckCircle2,
   CircleDot, Loader2, AlertCircle, Mic, ChevronRight, SkipForward,
   FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye, Plus,
-  Map, Trash2, Droplet, Sparkles
+  Map, Trash2, Droplet, Sparkles, Shield, Check
 } from "lucide-react";
 import type { Complaint, ComplaintStatus, StructuredOutput } from "../App";
 import { getCluster, inferIntent, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
@@ -1127,125 +1127,219 @@ function CommunityTab({ complaints }: { complaints: Complaint[] }) {
 
 // ─── Profile Tab ─────────────────────────────────────────────────────────────
 
-function ProfileTab({ complaints, onSelect }: { complaints: Complaint[], onSelect: (id: string) => void }) {
-  const myComplaints = complaints.slice(0, 4);
-  const resolvedCount = complaints.filter((c) => c.status === "Resolved").length;
-  const visionCount = complaints.filter((c) => c.structured_output).length;
+function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onViewAll: () => void }) {
+  const activeComplaints = complaints.filter(c => c.status !== "Resolved");
+  const resolvedCount = complaints.length - activeComplaints.length;
+  const latestComplaint = complaints[0];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-6 pt-8 pb-3">
-        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>Profile</p>
+    <div className="flex flex-col h-full bg-gray-50">
+      <div className="px-6 pt-8 pb-4 bg-white border-b border-black/5">
+        <p className="font-extrabold text-black text-2xl tracking-tight">Dashboard</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-4">
-        {/* Profile card */}
-        <div className="bg-[#FFA958] rounded-2xl p-4 text-black">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-full bg-black/15 flex items-center justify-center shrink-0">
-              <span className="font-extrabold text-black text-lg">R</span>
-            </div>
-            <div>
-              <p className="font-extrabold text-black text-base leading-tight">Rajesh Kumar</p>
-              <p className="text-xs text-black/60">Ward 12 · Bangalore North</p>
-              <p className="text-[10px] text-black/50 mt-0.5">Resident since 2014</p>
-            </div>
+      <div className="flex-1 overflow-y-auto px-5 pt-5 pb-8 flex flex-col gap-6">
+        
+        {/* 1. Identity Block */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-black/5 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border-2 border-white shadow-sm">
+            <span className="font-extrabold text-blue-600 text-xl">R</span>
           </div>
-          <div className="grid grid-cols-3 gap-2 bg-black/10 rounded-xl p-2.5 text-center">
-            <div>
-              <p className="font-extrabold text-black text-lg leading-none">{complaints.length}</p>
-              <p className="text-[10px] text-black/60 mt-0.5">Filed</p>
-            </div>
-            <div>
-              <p className="font-extrabold text-black text-lg leading-none">{resolvedCount}</p>
-              <p className="text-[10px] text-black/60 mt-0.5">Resolved</p>
-            </div>
-            <div>
-              <p className="font-extrabold text-black text-lg leading-none">{visionCount}</p>
-              <p className="text-[10px] text-black/60 mt-0.5">Visions</p>
+          <div className="flex-1">
+            <p className="font-extrabold text-black text-lg leading-tight">Rajesh Kumar</p>
+            <p className="text-xs font-semibold text-black/50 mt-0.5">Ward 12 · Bangalore North</p>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">Resident since 2014</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">Lang: EN</span>
             </div>
           </div>
         </div>
 
-        {/* Badges */}
-        <div className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
-          <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-3">Civic Badges</p>
-          <div className="flex gap-2 flex-wrap">
-            {[
-              { emoji: "🗣️", label: "Vocal Citizen" },
-              { emoji: "✦", label: "Vision Contributor" },
-              { emoji: "📍", label: "Ward 12 Rep" },
-            ].map((b) => (
-              <div key={b.label} className="flex items-center gap-1.5 bg-[#FFA958]/10 border border-[#FFA958]/25 rounded-full px-3 py-1.5">
-                <span className="text-sm">{b.emoji}</span>
-                <span className="text-[11px] font-semibold text-[#FFA958]">{b.label}</span>
+        {/* 2. Complaint Summary */}
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Civic Record</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 text-center flex flex-col items-center justify-center">
+              <p className="font-black text-black text-2xl">{complaints.length}</p>
+              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">Total Filed</p>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 text-center flex flex-col items-center justify-center">
+              <p className="font-black text-orange-500 text-2xl">{activeComplaints.length}</p>
+              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">Active</p>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 text-center flex flex-col items-center justify-center">
+              <p className="font-black text-green-500 text-2xl">{resolvedCount}</p>
+              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">Resolved</p>
+            </div>
+          </div>
+
+          {latestComplaint && (
+            <div className="bg-[#FFA958]/10 border border-[#FFA958]/20 rounded-2xl p-4 mt-1 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-3 opacity-20">
+                <FileText className="w-16 h-16 text-[#FFA958]" />
               </div>
-            ))}
+              <p className="text-[10px] font-bold text-[#FFA958] uppercase tracking-widest mb-1.5 relative z-10">Latest Active Issue</p>
+              <p className="text-sm font-bold text-black/80 leading-snug line-clamp-2 relative z-10 pr-6">{latestComplaint.text_input}</p>
+              <p className="text-xs font-semibold text-black/50 mt-2 relative z-10">Status: <span className="text-black/80">{latestComplaint.status}</span></p>
+            </div>
+          )}
+
+          <button 
+            onClick={onViewAll}
+            className="w-full bg-white border border-black/10 rounded-xl py-3 mt-1 text-xs font-bold text-black/70 hover:bg-black/5 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm"
+          >
+            View All Complaints
+            <ChevronRight className="w-3.5 h-3.5 opacity-50" />
+          </button>
+        </div>
+
+        {/* 3. Participation Footprint */}
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Community Impact</p>
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100/50 rounded-3xl p-5 shadow-sm relative overflow-hidden">
+             <div className="absolute -right-4 -bottom-4 opacity-5">
+               <Users className="w-32 h-32 text-purple-900" />
+             </div>
+             <p className="text-xl font-black text-purple-900 mb-1">Strong Presence</p>
+             <p className="text-xs font-medium text-purple-700/80 leading-relaxed max-w-[220px]">
+               Your active complaints are strengthening <span className="font-bold text-purple-900">2 community clusters</span>, directly elevating the civic priority for 144 nearby residents.
+             </p>
           </div>
         </div>
 
-        {/* Supported priorities */}
-        <div className="bg-white/80 rounded-2xl border border-black/8 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <Award className="w-4 h-4 text-[#FFA958]" />
-            <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider">Supported Priorities</p>
-          </div>
-          {[
-            { label: "Road repair on MG Road", pct: 34, cluster: "Road Issues" },
-            { label: "Waste collection in Sector 7", pct: 27, cluster: "Sanitation" },
-          ].map((p) => (
-            <div key={p.label} className="mb-3 last:mb-0">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">
-                    {(() => {
-                      const Icon = CLUSTER_ICON[p.cluster] || Map;
-                      return <Icon className="w-4 h-4 text-black" />;
-                    })()}
-                  </span>
-                  <span className="text-xs font-semibold text-black/70">{p.label}</span>
-                </div>
-                <span className="text-[10px] font-bold text-[#FFA958]">{p.pct}%</span>
+        {/* 4. Recent Activity */}
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Recent Activity</p>
+          <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-2 flex flex-col gap-1">
+            <div className="flex items-center gap-3 p-2">
+              <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
+                <FileText className="w-3.5 h-3.5 text-orange-500" />
               </div>
-              <div className="h-1 bg-black/8 rounded-full overflow-hidden">
-                <div className="h-full bg-[#FFA958] rounded-full" style={{ width: `${p.pct * 2}%` }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-black/80 truncate">Filed a new complaint</p>
+                <p className="text-[10px] font-medium text-black/40">2 days ago</p>
               </div>
             </div>
-          ))}
+            <div className="w-full h-px bg-black/5" />
+            <div className="flex items-center gap-3 p-2">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                <Bell className="w-3.5 h-3.5 text-blue-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-black/80 truncate">Update: Under Review</p>
+                <p className="text-[10px] font-medium text-black/40">1 week ago</p>
+              </div>
+            </div>
+            <div className="w-full h-px bg-black/5" />
+            <div className="flex items-center gap-3 p-2">
+              <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center shrink-0">
+                <Check className="w-3.5 h-3.5 text-green-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-black/80 truncate">Issue Resolved: Waste collection</p>
+                <p className="text-[10px] font-medium text-black/40">3 weeks ago</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* My complaints */}
-        <div>
-          <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-2 px-1">My Complaints</p>
-          <div className="flex flex-col gap-2">
-            {myComplaints.length === 0 && (
-              <p className="text-xs text-black/30 text-center py-4">No complaints yet.</p>
-            )}
-            {myComplaints.map((c) => {
+        {/* 5. Preferences & Accessibility */}
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Preferences</p>
+          <div className="bg-white rounded-2xl border border-black/5 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-black/5">
+              <div className="flex items-center gap-3">
+                <Map className="w-4 h-4 text-black/40" />
+                <p className="text-sm font-semibold text-black/80">App Language</p>
+              </div>
+              <span className="text-xs font-bold text-[#FFA958]">English</span>
+            </div>
+            <div className="flex items-center justify-between p-4 border-b border-black/5">
+              <div className="flex items-center gap-3">
+                <Bell className="w-4 h-4 text-black/40" />
+                <p className="text-sm font-semibold text-black/80">Push Notifications</p>
+              </div>
+              <div className="w-10 h-6 bg-[#FFA958] rounded-full relative shadow-inner">
+                <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow-sm" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <Mic className="w-4 h-4 text-black/40" />
+                <p className="text-sm font-semibold text-black/80">Default to Voice Input</p>
+              </div>
+              <div className="w-10 h-6 bg-black/10 rounded-full relative shadow-inner">
+                <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5 shadow-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. Trust & Transparency */}
+        <div className="flex flex-col gap-3 mb-6">
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Data & Privacy</p>
+          <div className="bg-gray-100 rounded-2xl p-5 border border-black/5 text-center">
+            <Shield className="w-6 h-6 text-black/20 mx-auto mb-2" />
+            <p className="text-xs font-bold text-black/60 mb-1">Your identity remains private.</p>
+            <p className="text-[10px] text-black/40 leading-relaxed max-w-[250px] mx-auto">
+              Only the category and general location of your complaints are shared publicly to build community clusters. Your personal information is never exposed to other citizens.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── My Complaints Screen ─────────────────────────────────────────────────────
+
+function MyComplaintsScreen({ complaints, onSelect, onBack }: { complaints: Complaint[], onSelect: (id: string) => void, onBack: () => void }) {
+  return (
+    <div className="absolute inset-0 bg-gray-50 z-40 flex flex-col pt-4">
+      <div className="px-6 flex items-center justify-between pb-4">
+        <button onClick={onBack} className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors active:scale-95">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <span className="text-xs font-bold text-black/60 tracking-widest uppercase">My Complaints</span>
+        <div className="w-8" />
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 pb-20">
+        {complaints.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
+             <FileText className="w-10 h-10 text-black/15" />
+             <p className="text-sm text-black/40">No complaints filed yet.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {complaints.map((c) => {
               const cfg = STATUS_CONFIG[c.status];
               return (
                 <div 
                   key={c.id} 
-                  className="bg-white/80 rounded-xl border border-black/8 p-3 shadow-sm flex items-start gap-2.5 cursor-pointer hover:border-black/15 active:scale-[0.98] transition-all"
+                  className="bg-white rounded-2xl border border-black/10 p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:border-black/20 active:scale-[0.98] transition-all"
                   onClick={() => onSelect(c.id)}
                 >
-                  <div>
-                    <p className="text-xs font-semibold text-black/70 leading-snug line-clamp-2">{c.text_input}</p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
-                        {c.status}
-                      </span>
-                      <span className="text-[10px] text-black/30">{timeAgo(c.timestamp)}</span>
-                      {c.structured_output && (
-                        <span className="text-[10px] text-[#FFA958] font-bold">✦ Vision</span>
-                      )}
-                    </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-bold text-black/80 leading-snug line-clamp-2">{c.text_input}</p>
+                    <span className="text-[10px] text-black/40 font-semibold whitespace-nowrap mt-0.5">{timeAgo(c.timestamp)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.color} flex items-center gap-1.5`}>
+                      <cfg.Icon className="w-3 h-3" />
+                      {c.status}
+                    </span>
+                    <span className="text-[10px] font-semibold text-black/40 bg-black/5 px-2.5 py-1 rounded-full flex items-center gap-1 max-w-[120px] truncate">
+                      <MapPin className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{c.location}</span>
+                    </span>
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -1356,6 +1450,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
   const [tab, setTab] = useState<Tab>("report");
   const [screen, setScreen] = useState<Screen>("landing");
   const [activeComplaintId, setActiveComplaintId] = useState<string | null>(null);
+  const [showMyComplaints, setShowMyComplaints] = useState(false);
   const [lang, setLang] = useState<Lang>("en");
   const [inputText, setInputText] = useState("");
   const [location, setLocation] = useState("");
@@ -1485,7 +1580,14 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
               t={t}
             />
           )}
-          {((tab === "report" && (screen === "landing" || screen === "community")) || tab === "community") && !activeComplaintId && (
+          {showMyComplaints && !activeComplaintId && (
+            <MyComplaintsScreen 
+              complaints={complaints}
+              onSelect={setActiveComplaintId}
+              onBack={() => setShowMyComplaints(false)}
+            />
+          )}
+          {((tab === "report" && (screen === "landing" || screen === "community")) || tab === "community") && !activeComplaintId && !showMyComplaints && (
             <CivicStructure 
               complaints={complaints} 
               systemState={systemState} 
@@ -1588,9 +1690,9 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
             </>
           )}
 
-          {tab === "updates" && <UpdatesTab complaints={complaints} onSelect={setActiveComplaintId} />}
-          {tab === "community" && <CommunityTab complaints={complaints} />}
-          {tab === "profile" && <ProfileTab complaints={complaints} onSelect={setActiveComplaintId} />}
+          {tab === "updates" && !showMyComplaints && !activeComplaintId && <UpdatesTab complaints={complaints} onSelect={setActiveComplaintId} />}
+          {tab === "community" && !showMyComplaints && !activeComplaintId && <CommunityTab complaints={complaints} />}
+          {tab === "profile" && !showMyComplaints && !activeComplaintId && <ProfileTab complaints={complaints} onViewAll={() => setShowMyComplaints(true)} />}
         </div>
 
         {/* Bottom navigation bar */}
