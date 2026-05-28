@@ -12,7 +12,7 @@ import { LocationPicker } from "./ui/LocationPicker";
 
 // ─── i18n ────────────────────────────────────────────────────────────────────
 
-type Lang = "en" | "hi";
+type Lang = "en" | "ta";
 
 const T: Record<Lang, Record<string, string>> = {
   en: {
@@ -78,72 +78,162 @@ const T: Record<Lang, Record<string, string>> = {
     first_reporter: "You're the first to report this type of issue!",
     submit_another: "Submit Another Complaint",
     // Status
+    voice_listening: "Listening...",
+    voice_record: "Record",
+    voice_started: "Recording started",
+    voice_stopped: "Recording stopped",
     awaiting: "Awaiting assignment",
     within_24: "Municipal team will review and assign within 24 hours",
     live_status: "Live Status",
     assigned_to: "Assigned To",
+    nav_report: "Report",
+    nav_updates: "Updates",
+    nav_community: "Community",
+    nav_profile: "Profile",
+    profile_dashboard: "Dashboard",
+    profile_resident_since: "Resident since 2014",
+    profile_lang: "Lang: EN",
+    profile_civic_record: "Civic Record",
+    profile_total_filed: "Total Filed",
+    profile_active: "Active",
+    profile_resolved: "Resolved",
+    profile_latest_issue: "Latest Active Issue",
+    profile_status: "Status: ",
+    profile_view_all: "View All Complaints",
+    profile_community_impact: "Community Impact",
+    profile_strong_presence: "Strong Presence",
+    profile_impact_desc: "Your active complaints are strengthening 2 community clusters, directly elevating the civic priority for 144 nearby residents.",
+    profile_recent_activity: "Recent Activity",
+    profile_filed_new: "Filed a new complaint",
+    profile_days_ago: "2 days ago",
+    profile_update_review: "Update: Under Review",
+    profile_week_ago: "1 week ago",
+    profile_resolved_issue: "Issue Resolved: Waste collection",
+    profile_weeks_ago: "3 weeks ago",
+    profile_preferences: "Preferences",
+    profile_app_lang: "App Language",
+    profile_push_notif: "Push Notifications",
+    profile_voice_default: "Default to Voice Input",
+    profile_trust: "Data & Privacy",
+    profile_trust_heading: "Your identity remains private.",
+    profile_trust_desc: "Only the category and general location of your complaints are shared publicly to build community clusters. Your personal information is never exposed to other citizens.",
+    my_complaints_title: "My Complaints",
+    my_complaints_empty: "You haven't filed any complaints yet.",
+    my_complaints_start: "Start your first report",
+    community_title: "Your Community",
+    community_top_ward: "Top Ward Priority",
+    community_collab: "Collaborative action · measurable progress",
+    community_better: "Better & Free Mobility",
+    community_road_repairs: "Road repairs on MG Road & surrounds · 34% of residents directly affected · 2 active issues tracked",
+    community_support: "Community support",
+    community_more_reach: "32% more to reach municipal action threshold",
   },
-  hi: {
-    welcome: "वापसी पर स्वागत",
-    greeting: "नमस्ते राजेश,",
-    hero: "आप अपने शहर को बेहतर बनाने के लिए क्या चाहते हैं?",
-    tagline: "आपकी आवाज़ शहर की प्राथमिकताएं तय करती है",
-    placeholder: "अपनी समस्या बताएं… (जैसे MG रोड पर गड्ढा)",
-    location_ph: "स्थान (वैकल्पिक)",
-    cluster_preview: "इसमें दर्ज होगा:",
-    submit: "शिकायत दर्ज करें",
-    ack_heading: "आपकी शिकायत मिल गई",
-    ack_conveyed: "हमने इसे जिम्मेदार अधिकारियों तक पहुंचा दिया है।",
-    ack_question: "क्या आप 2 मिनट में और बता सकते हैं?",
-    ack_continue: "हाँ, और बताएं",
-    ack_skip: "अभी नहीं",
-    step_of: "में से",
-    step_context_q: "यह आपके दैनिक जीवन को कैसे प्रभावित कर रहा है?",
-    step_context_ph: "यह मेरी रोज़ की यात्रा को प्रभावित करता है…",
-    chip_commute: "यह मेरे आवागमन को प्रभावित कर रहा है",
-    chip_harder: "इससे काम या स्कूल जाना मुश्किल हो जाता है",
-    chip_safety: "यह मेरी सुरक्षा / स्वास्थ्य / समय को प्रभावित करता है",
-    chip_others: "यह क्षेत्र के अन्य लोगों को भी प्रभावित करता है",
-    step_past_q: "पहले कैसा था? क्या बदला?",
-    step_past_ph: "पहले यह सड़क ठीक रहती थी…",
-    chip_freq: "यह अधिक बार हो रहा है",
-    chip_worse: "हाल ही में यह काफी खराब हो गया है",
-    chip_ignored: "पिछली शिकायतों को नजरअंदाज कर दिया गया",
-    chip_past_others: "अन्य लोगों ने भी यह बदलाव देखा है",
-    step_vision_q: "आपके अनुसार इसका हल क्या हो सकता है?",
-    step_vision_ph: "सड़क की ठीक से मरम्मत होनी चाहिए…",
-    chip_repair: "अस्थायी समाधान के बजाय पूर्ण मरम्मत",
-    chip_inspect: "नियमित निरीक्षण और रखरखाव",
-    chip_update: "बुनियादी ढांचे का आधुनिकीकरण करें",
-    chip_vision_others: "मैं बस इसे फिर से ठीक काम करते देखना चाहता हूँ",
-    step_vision_note: "यह सबसे महत्वपूर्ण हिस्सा है",
-    voice_hint: "रिकॉर्ड करने के लिए माइक दबाएं (सिमुलेटेड)",
-    next: "अगला →",
-    skip_step: "छोड़ें",
-    your_vision: "आपकी दृष्टि",
-    vision_issue: "समस्या",
-    vision_why: "यह क्यों मायने रखती है",
-    vision_outcome: "वांछित परिणाम",
-    vision_note: "नगर पालिका प्रणाली को भेजा गया",
-    continue_to_community: "सामुदायिक प्रभाव देखें →",
-    vision_heading: "आपकी दृष्टि",
-    vision_subheading: "नागरिक कार्रवाई के लिए संरचना",
-    community_sub: "आपकी आवाज़ आपके वार्ड के बढ़ते सामुदायिक आंदोलन से जुड़ती है।",
-    community_stat_pct: "वार्ड के लोग यह चिंता साझा करते हैं",
-    community_stat_similar: "आसपास की समान शिकायतें",
-    community_impact_title: "समाधान होने पर प्रभाव",
-    community_impact_desc: "यदि यह हल हो जाता है, तो इससे कई निवासियों की दैनिक गतिशीलता, सुरक्षा और जीवन की गुणवत्ता में सुधार होगा।",
-    track_complaint: "शिकायत ट्रैक करें",
-    tracking_title: "शिकायत ट्रैकिंग",
-    tracking_sub: "नगर पालिका से लाइव अपडेट",
-    cluster_label: "क्लस्टर",
-    similar_label: "आपके क्षेत्र में समान शिकायतें",
-    first_reporter: "आप इस प्रकार की पहली शिकायत दर्ज कर रहे हैं!",
-    submit_another: "एक और दर्ज करें",
-    awaiting: "असाइनमेंट की प्रतीक्षा",
-    within_24: "नगर पालिका 24 घंटे में समीक्षा करेगी",
-    live_status: "लाइव स्थिति",
-    assigned_to: "सौंपा गया",
+  ta: {
+    welcome: "மீண்டும் வருக",
+    greeting: "வணக்கம் ராஜேஷ்,",
+    hero: "இந்த நகரத்தை உங்களுக்கு ஏற்றதாக மாற்ற என்ன செய்ய வேண்டும்?",
+    tagline: "உங்கள் குரல் நகரத்தின் முன்னுரிமைகளை வடிவமைக்கிறது",
+    placeholder: "உங்கள் குறையை விவரிக்கவும்… (உதா: MG சாலையில் குழி)",
+    location_ph: "இடம் (விருப்பத்தேர்வு)",
+    cluster_preview: "இந்தப் பிரிவில் பதிவு செய்யப்படும்:",
+    submit: "குறையை பதிவு செய்",
+    ack_heading: "உங்கள் குறை பதிவு செய்யப்பட்டது",
+    ack_conveyed: "இதை சம்பந்தப்பட்ட அதிகாரிகளின் கவனத்திற்கு கொண்டு சென்றுள்ளோம்.",
+    ack_question: "உங்களுக்கு 2 நிமிடம் நேரம் இருந்தால், இதைப் பற்றி மேலும் கூற முடியுமா?",
+    ack_continue: "ஆம், மேலும் கூறுகிறேன்",
+    ack_skip: "இப்போது வேண்டாம்",
+    step_of: "இல்",
+    step_context_q: "இது உங்கள் அன்றாட வாழ்க்கையை எவ்வாறு பாதிக்கிறது?",
+    step_context_ph: "இது எனது தினசரி பயணத்தை பாதிக்கிறது…",
+    chip_commute: "இது எனது பயணத்தை பாதிக்கிறது",
+    chip_harder: "இது வேலை அல்லது பள்ளிக்கு செல்வதை கடினமாக்குகிறது",
+    chip_safety: "இது எனது பாதுகாப்பு / நேரம் / ஆரோக்கியத்தை பாதிக்கிறது",
+    chip_others: "இது அப்பகுதியில் உள்ள மற்றவர்களையும் பாதிக்கிறது",
+    step_past_q: "முன்பு எப்படி இருந்தது? என்ன மாறியது?",
+    step_past_ph: "முன்பு இந்தச் சாலை சீராக இருந்தது…",
+    chip_freq: "இது அடிக்கடி நிகழ்கிறது",
+    chip_worse: "சமீபத்தில் இது மிகவும் மோசமாகிவிட்டது",
+    chip_ignored: "முந்தைய புகார்கள் கவனிக்கப்படவில்லை",
+    chip_past_others: "மற்றவர்களும் இந்த மாற்றத்தை கவனித்துள்ளனர்",
+    step_vision_q: "இதற்கு என்ன தீர்வு என நீங்கள் நினைக்கிறீர்கள்?",
+    step_vision_ph: "சாலையை முழுமையாக சீரமைக்க வேண்டும்…",
+    chip_repair: "தற்காலிகமாக அல்லாமல் முழுமையான சீரமைப்பு",
+    chip_inspect: "முறையான ஆய்வு மற்றும் பராமரிப்பு",
+    chip_update: "உள்கட்டமைப்பை நவீனப்படுத்துங்கள்",
+    chip_vision_others: "இது மீண்டும் சரியாக செயல்பட வேண்டும்",
+    step_vision_note: "இது மிக முக்கியமான பகுதி",
+    voice_hint: "பதிவு செய்ய மைக்கை அழுத்தவும்",
+    next: "அடுத்து →",
+    skip_step: "தவிர்",
+    your_vision: "உங்கள் பார்வை",
+    vision_issue: "பிரச்சினை",
+    vision_why: "ஏன் முக்கியமானது",
+    vision_outcome: "எதிர்பார்க்கும் முடிவு",
+    vision_note: "மாநகராட்சி அமைப்புக்கு அனுப்பப்பட்டது",
+    continue_to_community: "சமூக தாக்கத்தைக் காணுங்கள் →",
+    vision_heading: "உங்கள் பார்வை",
+    vision_subheading: "மக்கள் நடவடிக்கைக்கான கட்டமைப்பு",
+    community_sub: "உங்கள் குரல் உங்கள் வார்டில் வளரும் சமூக இயக்கத்துடன் இணைகிறது.",
+    community_stat_pct: "வார்டு மக்கள் இந்தக் குறையைப் பகிர்ந்துள்ளனர்",
+    community_stat_similar: "அருகிலுள்ள ஒத்த புகார்கள்",
+    community_impact_title: "தீர்வு காணப்பட்டால் ஏற்படும் தாக்கம்",
+    community_impact_desc: "இது தீர்க்கப்பட்டால், பலரின் தினசரி பயணம், பாதுகாப்பு மற்றும் வாழ்க்கைத் தரம் மேம்படும்.",
+    track_complaint: "குறையை கண்காணிக்கவும்",
+    tracking_title: "குறை கண்காணிப்பு",
+    tracking_sub: "மாநகராட்சியிலிருந்து நேரடி அறிவிப்புகள்",
+    cluster_label: "பிரிவு",
+    similar_label: "உங்கள் பகுதியில் உள்ள ஒத்த புகார்கள்",
+    first_reporter: "இந்த வகையான சிக்கலை முதன்முதலில் நீங்கள் பதிவு செய்துள்ளீர்கள்!",
+    submit_another: "மற்றொரு குறையை பதிவு செய்",
+    voice_listening: "கேட்கிறது...",
+    voice_record: "பதிவு செய்",
+    voice_started: "பதிவு தொடங்கியது",
+    voice_stopped: "பதிவு முடிந்தது",
+    awaiting: "ஒதுக்கீடு செய்ய காத்திருக்கிறது",
+    within_24: "24 மணி நேரத்திற்குள் மாநகராட்சி குழு மதிப்பாய்வு செய்யும்",
+    live_status: "நேரடி நிலை",
+    assigned_to: "ஒதுக்கப்பட்டது",
+    nav_report: "பதிவு",
+    nav_updates: "அறிவிப்புகள்",
+    nav_community: "சமூகம்",
+    nav_profile: "சுயவிவரம்",
+    profile_dashboard: "கட்டுப்பாட்டு அறை",
+    profile_resident_since: "2014 முதல் வசிப்பவர்",
+    profile_lang: "மொழி: தமிழ்",
+    profile_civic_record: "குடிமை பதிவு",
+    profile_total_filed: "மொத்தம்",
+    profile_active: "செயலில்",
+    profile_resolved: "முடிந்தது",
+    profile_latest_issue: "சமீபத்திய குறை",
+    profile_status: "நிலை: ",
+    profile_view_all: "அனைத்து குறைகளையும் காண்",
+    profile_community_impact: "சமூக தாக்கம்",
+    profile_strong_presence: "வலுவான பதிவு",
+    profile_impact_desc: "உங்கள் புகார்கள் 2 சமூக குழுக்களை வலுப்படுத்துகின்றன, அருகிலுள்ள 144 குடியிருப்பாளர்களின் முன்னுரிமையை உயர்த்துகின்றன.",
+    profile_recent_activity: "சமீபத்திய செயல்பாடு",
+    profile_filed_new: "புதிய குறை பதிவு",
+    profile_days_ago: "2 நாட்களுக்கு முன்",
+    profile_update_review: "மதிப்பாய்வில் உள்ளது",
+    profile_week_ago: "1 வாரத்திற்கு முன்",
+    profile_resolved_issue: "தீர்க்கப்பட்டது: குப்பை அகற்றுதல்",
+    profile_weeks_ago: "3 வாரங்களுக்கு முன்",
+    profile_preferences: "விருப்பங்கள்",
+    profile_app_lang: "செயலி மொழி",
+    profile_push_notif: "அறிவிப்புகள்",
+    profile_voice_default: "குரல் வழி பதிவு",
+    profile_trust: "தரவு & தனியுரிமை",
+    profile_trust_heading: "உங்கள் அடையாளம் பாதுகாப்பானது.",
+    profile_trust_desc: "உங்கள் புகார்களின் வகை மற்றும் பொதுவான இடம் மட்டுமே சமூக குழுக்களை உருவாக்க பகிரப்படும். உங்கள் தனிப்பட்ட தகவல்கள் மற்றவர்களுக்கு காட்டப்படாது.",
+    my_complaints_title: "என் குறைகள்",
+    my_complaints_empty: "நீங்கள் இன்னும் எந்த குறையும் பதிவு செய்யவில்லை.",
+    my_complaints_start: "உங்கள் முதல் குறையை பதிவு செய்",
+    community_title: "உங்கள் சமூகம்",
+    community_top_ward: "வார்டின் முன்னுரிமை",
+    community_collab: "கூட்டு நடவடிக்கை · அளவிடக்கூடிய முன்னேற்றம்",
+    community_better: "சிறந்த & தடையற்ற பயணம்",
+    community_road_repairs: "எம்.ஜி சாலை & சுற்றுப்புறங்களில் சாலை சீரமைப்பு · 34% குடியிருப்பாளர்கள் பாதிப்பு · 2 குறைகள் கண்காணிக்கப்படுகின்றன",
+    community_support: "சமூக ஆதரவு",
+    community_more_reach: "மாநகராட்சி நடவடிக்கைக்கு மேலும் 32% தேவை",
   },
 };
 
@@ -204,16 +294,16 @@ function LandingScreen({
         </div>
       )}
 
-      <div className="mt-16 flex justify-center relative z-20">
+      <div className="mt-28 flex justify-center relative z-20">
         <button
           onClick={onStart}
-          aria-label="Add complaint"
+          aria-label={t.submit}
           className="flex items-center gap-3 bg-[#FFA958] text-black px-6 py-4 rounded-full shadow-2xl shadow-[#FFA958]/30 active:scale-95 transition-all hover:bg-[#FFA958]/90"
         >
           <div className="w-8 h-8 bg-black/10 rounded-full flex items-center justify-center">
             <Plus className="w-5 h-5 text-black" />
           </div>
-          <span className="font-bold text-base tracking-wide">Add complaint</span>
+          <span className="font-bold text-base tracking-wide">{t.submit}</span>
         </button>
       </div>
 
@@ -291,7 +381,7 @@ function HomeScreen({
       setIsListening(false);
     } else {
       originalTextRef.current = inputText ? inputText + " " : "";
-      recognitionRef.current.lang = lang === "hi" ? "hi-IN" : "en-IN";
+      recognitionRef.current.lang = lang === "ta" ? "ta-IN" : "en-IN";
       
       recognitionRef.current.onstart = () => {
         setIsListening(true);
@@ -394,7 +484,7 @@ function HomeScreen({
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center ${isListening ? 'bg-white/20' : 'bg-black/10'}`}>
                   <Mic className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-xs font-bold">{isListening ? "Listening..." : "Record"}</span>
+                <span className="text-xs font-bold">{isListening ? t.voice_listening : t.voice_record}</span>
               </button>
             </div>
           </div>
@@ -405,7 +495,7 @@ function HomeScreen({
 
         {/* Accessibility Live Region */}
         <div aria-live="polite" className="sr-only">
-          {isListening ? "Recording started" : "Recording stopped"}
+          {isListening ? t.voice_started : t.voice_stopped}
           {voiceError && "I may have misheard that — please review or try again."}
         </div>
 
@@ -825,7 +915,7 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
 
 // ─── Updates Tab ─────────────────────────────────────────────────────────────
 
-function UpdatesTab({ complaints, onSelect }: { complaints: Complaint[], onSelect: (id: string) => void }) {
+function UpdatesTab({ complaints, onSelect, t }: { complaints: Complaint[], onSelect: (id: string) => void, t: Record<string, string> }) {
   type UpdateEvent = {
     id: string;
     complaintId: string;
@@ -899,8 +989,8 @@ function UpdatesTab({ complaints, onSelect }: { complaints: Complaint[], onSelec
   return (
     <div className="flex flex-col h-full">
       <div className="px-6 pt-8 pb-4">
-        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>Updates</p>
-        <p className="text-xs text-black/40 mt-0.5">Live status from municipal system</p>
+        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>{t.nav_updates}</p>
+        <p className="text-xs text-black/40 mt-0.5">{t.tracking_sub}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pb-4">
@@ -945,7 +1035,7 @@ function UpdatesTab({ complaints, onSelect }: { complaints: Complaint[], onSelec
 
 // ─── Community Tab ────────────────────────────────────────────────────────────
 
-function CommunityTab({ complaints }: { complaints: Complaint[] }) {
+function CommunityTab({ complaints, t }: { complaints: Complaint[], t: Record<string, string> }) {
   const clusters = ["Road Issues", "Sanitation", "Water Supply", "General Issues"] as const;
   const totalComplaints = complaints.length;
   const withVisions = complaints.filter((c) => c.structured_output).length;
@@ -955,8 +1045,8 @@ function CommunityTab({ complaints }: { complaints: Complaint[] }) {
   return (
     <div className="flex flex-col h-full bg-transparent relative z-10">
       <div className="px-6 pt-8 pb-4">
-        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>Your Ward</p>
-        <p className="text-xs text-black/40 mt-0.5">Community voice · shared priorities · collective vision</p>
+        <p className="font-extrabold text-black" style={{ fontSize: 20 }}>{t.community_title}</p>
+        <p className="text-xs text-black/40 mt-0.5">{t.community_living}</p>
       </div>
 
       <div className="flex-1 min-h-[350px] pointer-events-none" />
@@ -1099,25 +1189,25 @@ function CommunityTab({ complaints }: { complaints: Complaint[] }) {
               <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs font-extrabold text-blue-700">Top Ward Priority</p>
-              <p className="text-[10px] text-black/40">Collaborative action · measurable progress</p>
+              <p className="text-xs font-extrabold text-blue-700">{t.community_top_ward}</p>
+              <p className="text-[10px] text-black/40">{t.community_collab}</p>
             </div>
           </div>
           <p className="text-sm font-extrabold text-black/90 leading-snug mb-2">
-            Better & Free Mobility
+            {t.community_better}
           </p>
           <p className="text-xs text-black/60 mb-3 leading-relaxed">
-            Road repairs on MG Road & surrounds · 34% of residents directly affected · 2 active issues tracked
+            {t.community_road_repairs}
           </p>
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] mb-0.5">
-              <span className="text-black/50">Community support</span>
+              <span className="text-black/50">{t.community_support}</span>
               <span className="font-bold text-blue-600">68%</span>
             </div>
             <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all" style={{ width: "68%" }} />
             </div>
-            <p className="text-[9px] text-black/30 mt-1">32% more to reach municipal action threshold</p>
+            <p className="text-[9px] text-black/30 mt-1">{t.community_more_reach}</p>
           </div>
         </div>
       </div>
@@ -1127,7 +1217,7 @@ function CommunityTab({ complaints }: { complaints: Complaint[] }) {
 
 // ─── Profile Tab ─────────────────────────────────────────────────────────────
 
-function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onViewAll: () => void }) {
+function ProfileTab({ complaints, onViewAll, t }: { complaints: Complaint[], onViewAll: () => void, t: Record<string, string> }) {
   const activeComplaints = complaints.filter(c => c.status !== "Resolved");
   const resolvedCount = complaints.length - activeComplaints.length;
   const latestComplaint = complaints[0];
@@ -1135,7 +1225,7 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
   return (
     <div className="flex flex-col h-full bg-gray-50">
       <div className="px-6 pt-8 pb-4 bg-white border-b border-black/5">
-        <p className="font-extrabold text-black text-2xl tracking-tight">Dashboard</p>
+        <p className="font-extrabold text-black text-2xl tracking-tight">{t.profile_dashboard}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pt-5 pb-8 flex flex-col gap-6">
@@ -1149,27 +1239,27 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
             <p className="font-extrabold text-black text-lg leading-tight">Rajesh Kumar</p>
             <p className="text-xs font-semibold text-black/50 mt-0.5">Ward 12 · Bangalore North</p>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">Resident since 2014</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">Lang: EN</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">{t.profile_resident_since}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">{t.profile_lang}</span>
             </div>
           </div>
         </div>
 
         {/* 2. Complaint Summary */}
         <div className="flex flex-col gap-3">
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Civic Record</p>
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">{t.profile_civic_record}</p>
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 text-center flex flex-col items-center justify-center">
               <p className="font-black text-black text-2xl">{complaints.length}</p>
-              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">Total Filed</p>
+              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">{t.profile_total_filed}</p>
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 text-center flex flex-col items-center justify-center">
               <p className="font-black text-orange-500 text-2xl">{activeComplaints.length}</p>
-              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">Active</p>
+              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">{t.profile_active}</p>
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 text-center flex flex-col items-center justify-center">
               <p className="font-black text-green-500 text-2xl">{resolvedCount}</p>
-              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">Resolved</p>
+              <p className="text-[10px] font-bold text-black/50 uppercase mt-1">{t.profile_resolved}</p>
             </div>
           </div>
 
@@ -1178,9 +1268,9 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
               <div className="absolute top-0 right-0 p-3 opacity-20">
                 <FileText className="w-16 h-16 text-[#FFA958]" />
               </div>
-              <p className="text-[10px] font-bold text-[#FFA958] uppercase tracking-widest mb-1.5 relative z-10">Latest Active Issue</p>
+              <p className="text-[10px] font-bold text-[#FFA958] uppercase tracking-widest mb-1.5 relative z-10">{t.profile_latest_issue}</p>
               <p className="text-sm font-bold text-black/80 leading-snug line-clamp-2 relative z-10 pr-6">{latestComplaint.text_input}</p>
-              <p className="text-xs font-semibold text-black/50 mt-2 relative z-10">Status: <span className="text-black/80">{latestComplaint.status}</span></p>
+              <p className="text-xs font-semibold text-black/50 mt-2 relative z-10">{t.profile_status}<span className="text-black/80">{latestComplaint.status}</span></p>
             </div>
           )}
 
@@ -1188,36 +1278,36 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
             onClick={onViewAll}
             className="w-full bg-white border border-black/10 rounded-xl py-3 mt-1 text-xs font-bold text-black/70 hover:bg-black/5 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm"
           >
-            View All Complaints
+            {t.profile_view_all}
             <ChevronRight className="w-3.5 h-3.5 opacity-50" />
           </button>
         </div>
 
         {/* 3. Participation Footprint */}
         <div className="flex flex-col gap-3">
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Community Impact</p>
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">{t.profile_community_impact}</p>
           <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100/50 rounded-3xl p-5 shadow-sm relative overflow-hidden">
              <div className="absolute -right-4 -bottom-4 opacity-5">
                <Users className="w-32 h-32 text-purple-900" />
              </div>
-             <p className="text-xl font-black text-purple-900 mb-1">Strong Presence</p>
+             <p className="text-xl font-black text-purple-900 mb-1">{t.profile_strong_presence}</p>
              <p className="text-xs font-medium text-purple-700/80 leading-relaxed max-w-[220px]">
-               Your active complaints are strengthening <span className="font-bold text-purple-900">2 community clusters</span>, directly elevating the civic priority for 144 nearby residents.
+               {t.profile_impact_desc}
              </p>
           </div>
         </div>
 
         {/* 4. Recent Activity */}
         <div className="flex flex-col gap-3">
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Recent Activity</p>
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">{t.profile_recent_activity}</p>
           <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-2 flex flex-col gap-1">
             <div className="flex items-center gap-3 p-2">
               <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
                 <FileText className="w-3.5 h-3.5 text-orange-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-black/80 truncate">Filed a new complaint</p>
-                <p className="text-[10px] font-medium text-black/40">2 days ago</p>
+                <p className="text-xs font-bold text-black/80 truncate">{t.profile_filed_new}</p>
+                <p className="text-[10px] font-medium text-black/40">{t.profile_days_ago}</p>
               </div>
             </div>
             <div className="w-full h-px bg-black/5" />
@@ -1226,8 +1316,8 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
                 <Bell className="w-3.5 h-3.5 text-blue-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-black/80 truncate">Update: Under Review</p>
-                <p className="text-[10px] font-medium text-black/40">1 week ago</p>
+                <p className="text-xs font-bold text-black/80 truncate">{t.profile_update_review}</p>
+                <p className="text-[10px] font-medium text-black/40">{t.profile_week_ago}</p>
               </div>
             </div>
             <div className="w-full h-px bg-black/5" />
@@ -1236,8 +1326,8 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
                 <Check className="w-3.5 h-3.5 text-green-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-black/80 truncate">Issue Resolved: Waste collection</p>
-                <p className="text-[10px] font-medium text-black/40">3 weeks ago</p>
+                <p className="text-xs font-bold text-black/80 truncate">{t.profile_resolved_issue}</p>
+                <p className="text-[10px] font-medium text-black/40">{t.profile_weeks_ago}</p>
               </div>
             </div>
           </div>
@@ -1245,19 +1335,19 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
 
         {/* 5. Preferences & Accessibility */}
         <div className="flex flex-col gap-3">
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Preferences</p>
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">{t.profile_preferences}</p>
           <div className="bg-white rounded-2xl border border-black/5 shadow-sm flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-black/5">
               <div className="flex items-center gap-3">
                 <Map className="w-4 h-4 text-black/40" />
-                <p className="text-sm font-semibold text-black/80">App Language</p>
+                <p className="text-sm font-semibold text-black/80">{t.profile_app_lang}</p>
               </div>
               <span className="text-xs font-bold text-[#FFA958]">English</span>
             </div>
             <div className="flex items-center justify-between p-4 border-b border-black/5">
               <div className="flex items-center gap-3">
                 <Bell className="w-4 h-4 text-black/40" />
-                <p className="text-sm font-semibold text-black/80">Push Notifications</p>
+                <p className="text-sm font-semibold text-black/80">{t.profile_push_notif}</p>
               </div>
               <div className="w-10 h-6 bg-[#FFA958] rounded-full relative shadow-inner">
                 <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow-sm" />
@@ -1266,7 +1356,7 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <Mic className="w-4 h-4 text-black/40" />
-                <p className="text-sm font-semibold text-black/80">Default to Voice Input</p>
+                <p className="text-sm font-semibold text-black/80">{t.profile_voice_default}</p>
               </div>
               <div className="w-10 h-6 bg-black/10 rounded-full relative shadow-inner">
                 <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5 shadow-sm" />
@@ -1277,12 +1367,12 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
 
         {/* 6. Trust & Transparency */}
         <div className="flex flex-col gap-3 mb-6">
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">Data & Privacy</p>
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest pl-1">{t.profile_trust}</p>
           <div className="bg-gray-100 rounded-2xl p-5 border border-black/5 text-center">
             <Shield className="w-6 h-6 text-black/20 mx-auto mb-2" />
-            <p className="text-xs font-bold text-black/60 mb-1">Your identity remains private.</p>
+            <p className="text-xs font-bold text-black/60 mb-1">{t.profile_trust_heading}</p>
             <p className="text-[10px] text-black/40 leading-relaxed max-w-[250px] mx-auto">
-              Only the category and general location of your complaints are shared publicly to build community clusters. Your personal information is never exposed to other citizens.
+              {t.profile_trust_desc}
             </p>
           </div>
         </div>
@@ -1294,14 +1384,14 @@ function ProfileTab({ complaints, onViewAll }: { complaints: Complaint[], onView
 
 // ─── My Complaints Screen ─────────────────────────────────────────────────────
 
-function MyComplaintsScreen({ complaints, onSelect, onBack }: { complaints: Complaint[], onSelect: (id: string) => void, onBack: () => void }) {
+function MyComplaintsScreen({ complaints, onSelect, onBack, t }: { complaints: Complaint[], onSelect: (id: string) => void, onBack: () => void, t: Record<string, string> }) {
   return (
     <div className="absolute inset-0 bg-gray-50 z-40 flex flex-col pt-4">
       <div className="px-6 flex items-center justify-between pb-4">
         <button onClick={onBack} className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-black/40 hover:text-black/60 transition-colors active:scale-95">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <span className="text-xs font-bold text-black/60 tracking-widest uppercase">My Complaints</span>
+        <span className="text-xs font-bold text-black/60 tracking-widest uppercase">{t.my_complaints_title}</span>
         <div className="w-8" />
       </div>
 
@@ -1309,7 +1399,7 @@ function MyComplaintsScreen({ complaints, onSelect, onBack }: { complaints: Comp
         {complaints.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
              <FileText className="w-10 h-10 text-black/15" />
-             <p className="text-sm text-black/40">No complaints filed yet.</p>
+             <p className="text-sm text-black/40">{t.my_complaints_empty}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -1549,12 +1639,12 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
         <div className="absolute top-0 left-0 right-0 pt-[env(safe-area-inset-top,16px)] sm:pt-0 sm:h-10 flex items-center sm:items-end justify-between px-6 pb-2 sm:pb-1 z-20">
           <span className="hidden sm:block text-[11px] font-semibold text-black">9:41</span>
           <button
-            onClick={() => setLang((l) => (l === "en" ? "hi" : "en"))}
-            className="flex items-center bg-black/10 rounded-full px-3 py-1 mt-2 sm:mt-0 text-[11px] font-bold text-black/60 gap-1 sm:ml-auto"
+            onClick={() => setLang((l) => (l === "en" ? "ta" : "en"))}
+            className="flex items-center bg-black/10 rounded-full px-3 py-1.5 mt-2 sm:mt-0 text-xs font-bold text-black/60 gap-1.5 sm:ml-auto"
           >
-            <span className={lang === "en" ? "text-black" : "text-black/40"}>EN</span>
-            <span className="text-black/20">|</span>
-            <span className={lang === "hi" ? "text-black" : "text-black/40"}>हि</span>
+            <span className={lang === "en" ? "text-black" : "text-black/40"}>English</span>
+            <span className="text-black/20">/</span>
+            <span className={lang === "ta" ? "text-black" : "text-black/40"}>தமிழ்</span>
           </button>
           <div className="hidden sm:flex items-center gap-1 text-black ml-auto">
             <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
@@ -1585,6 +1675,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
               complaints={complaints}
               onSelect={setActiveComplaintId}
               onBack={() => setShowMyComplaints(false)}
+              t={t}
             />
           )}
           {((tab === "report" && (screen === "landing" || screen === "community")) || tab === "community") && !activeComplaintId && !showMyComplaints && (
@@ -1725,7 +1816,7 @@ export function CitizenView({ complaints, onAddComplaint, onUpdateComplaint }: P
                 <span
                   className={`text-[10px] font-semibold transition-all ${isActive ? "text-[#FFA958]" : "text-black/30"}`}
                 >
-                  {label}
+                  {t[("nav_" + id) as keyof typeof t]}
                 </span>
                 {isActive && (
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#FFA958] rounded-full" />
