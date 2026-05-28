@@ -24,8 +24,6 @@ const T: Record<Lang, Record<string, string>> = {
     location_ph: "Location (optional)",
     cluster_preview: "Will be filed under:",
     submit: "Submit Complaint",
-    recent_hint: "Others have reported similar",
-    issues: "issues. Your complaint will be clustered.",
     // Ack screen
     ack_heading: "We've received your complaint",
     ack_conveyed: "We have conveyed this to the authorities that are responsible.",
@@ -94,8 +92,6 @@ const T: Record<Lang, Record<string, string>> = {
     location_ph: "स्थान (वैकल्पिक)",
     cluster_preview: "इसमें दर्ज होगा:",
     submit: "शिकायत दर्ज करें",
-    recent_hint: "अन्य लोगों ने भी इसी तरह की",
-    issues: "समस्याएं रिपोर्ट की हैं।",
     ack_heading: "आपकी शिकायत मिल गई",
     ack_conveyed: "हमने इसे जिम्मेदार अधिकारियों तक पहुंचा दिया है।",
     ack_question: "क्या आप 2 मिनट में और बता सकते हैं?",
@@ -407,18 +403,7 @@ function HomeScreen({
           {t.submit}
         </button>
 
-        {canSubmit && recentCluster && (() => {
-          const RecentIcon = CLUSTER_ICON[recentCluster] || Map;
-          return (
-            <div className="bg-black/3 rounded-2xl p-3 flex items-start gap-2">
-              <RecentIcon className="w-4 h-4 text-black/40 shrink-0 mt-0.5" />
-              <p className="text-xs text-black/50 leading-relaxed">
-                {t.recent_hint}{" "}
-                <span className="font-semibold">{recentCluster.toLowerCase()}</span> {t.issues}
-              </p>
-            </div>
-          );
-        })()}
+
       </div>
 
       <div className="px-6 py-3 text-center">
