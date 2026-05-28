@@ -3,7 +3,7 @@ import {
   Send, MapPin, ArrowLeft, Users, Clock, CheckCircle2,
   CircleDot, Loader2, AlertCircle, Mic, ChevronRight, SkipForward,
   FileText, Bell, User, TrendingUp, BarChart2, Award, Heart, Eye, Plus,
-  Map, Trash2, Droplet, Sparkles, Shield, Check
+  Map, Trash2, Droplet, Sparkles, Shield, Check, Building2
 } from "lucide-react";
 import type { Complaint, ComplaintStatus, StructuredOutput } from "../App";
 import { getCluster, inferIntent, CLUSTER_DEPT, CLUSTER_COMMUNITY_PCT } from "../App";
@@ -127,6 +127,65 @@ const T: Record<Lang, Record<string, string>> = {
     community_road_repairs: "Road repairs on MG Road & surrounds · 34% of residents directly affected · 2 active issues tracked",
     community_support: "Community support",
     community_more_reach: "32% more to reach municipal action threshold",
+    tracking_latest_update: "Latest Update",
+    tracking_regarding: "Regarding: ",
+    tracking_title: "Tracking Your Complaint",
+    tracking_latest: "Latest Updates",
+    community_setup: "Community Setup Complete",
+    community_linked: "Your vision has been linked to active reports in your ward to form a unified civic priority.",
+    community_explore: "Explore Civic Structure",
+    community_track: "Track My Complaint",
+    civic_active_reports: "active reports",
+    civic_trending: "Trending",
+    civic_structure_title: "Community Civic Structure",
+    civic_tap_cubes: "Tap cubes to explore active issues",
+    detail_title: "Details",
+    detail_grouping: "Community Grouping",
+    detail_grouping_desc: "This complaint is part of the community cluster. It has been prioritized along with similar local issues.",
+    updates_no_activity: "No activity yet. Submit a complaint to see updates.",
+    updates_vision: "Vision Contributed",
+    time_just_now: "just now",
+    time_m_ago: "m ago",
+    time_h_ago: "h ago",
+    time_d_ago: "d ago",
+    status_submitted: "Submitted",
+    status_acknowledged: "Acknowledged",
+    status_grouped: "Grouped",
+    status_routed: "Routed",
+    status_review: "Under Review",
+    status_action: "Action Initiated",
+    status_resolved: "Resolved",
+    desc_submitted: "Your complaint has been logged in the system.",
+    desc_acknowledged: "Received and acknowledged by the civic system.",
+    desc_grouped: "Similar complaints from your ward have been linked to this issue.",
+    desc_routed: "Sent to the responsible civic authority for review.",
+    desc_review: "The issue is currently being assessed by officers.",
+    desc_action: "Initial action and on-ground work has started.",
+    desc_resolved: "The complaint has been marked resolved.",
+    sent_to: "Sent to ",
+    for_review: " for review.",
+    complaint_logged: "Complaint logged: ",
+    private_notice: "Your complaint is private · Ward 12 · Bangalore",
+    community_visions: "Community Visions",
+    community_neighbors: " neighbors shared their hopes",
+    ward_alignment: "% ward alignment",
+    more_visions: " more visions shared",
+    profile_name: "Rajesh Kumar",
+    profile_ward: "Ward 12 · Bangalore North",
+    prog_logged: "Logged",
+    prog_grouped: "Grouped",
+    prog_elevated: "Elevated",
+    prog_routed: "Routed",
+    comm_desc_1: "Your complaint just joined ",
+    comm_desc_2: " others",
+    comm_desc_3: " in the cluster. The structure above grows as more citizens report issues, elevating its priority for routing.",
+    comm_legend_1_title: "1 Cube:",
+    comm_legend_1_desc: " Represents 1 local complaint.",
+    comm_legend_2_title: "Clusters:",
+    comm_legend_2_desc: " Similar complaints grouped together.",
+    comm_legend_3_title: "Density:",
+    comm_legend_3_desc: " Indicates stronger community concentration.",
+    voice_error: "I may have misheard that — please review or try again."
   },
   ta: {
     welcome: "மீண்டும் வருக",
@@ -234,6 +293,65 @@ const T: Record<Lang, Record<string, string>> = {
     community_road_repairs: "எம்.ஜி சாலை & சுற்றுப்புறங்களில் சாலை சீரமைப்பு · 34% குடியிருப்பாளர்கள் பாதிப்பு · 2 குறைகள் கண்காணிக்கப்படுகின்றன",
     community_support: "சமூக ஆதரவு",
     community_more_reach: "மாநகராட்சி நடவடிக்கைக்கு மேலும் 32% தேவை",
+    tracking_latest_update: "சமீபத்திய புதுப்பிப்பு",
+    tracking_regarding: "தொடர்பாக: ",
+    tracking_title: "உங்கள் குறையை கண்காணிக்கவும்",
+    tracking_latest: "சமீபத்திய புதுப்பிப்புகள்",
+    community_setup: "சமூக அமைப்பு முடிந்தது",
+    community_linked: "உங்கள் பார்வை ஒருங்கிணைந்த குடிமை முன்னுரிமையை உருவாக்க உங்கள் வார்டில் உள்ள செயலில் உள்ள அறிக்கைகளுடன் இணைக்கப்பட்டுள்ளது.",
+    community_explore: "குடிமை அமைப்பை ஆராய்க",
+    community_track: "என் குறையை கண்காணிக்கவும்",
+    civic_active_reports: "செயலில் உள்ள அறிக்கைகள்",
+    civic_trending: "பிரபலமானவை",
+    civic_structure_title: "சமூக குடிமை அமைப்பு",
+    civic_tap_cubes: "கியூப்களை அழுத்தி செயலில் உள்ள குறைகளை காண்க",
+    detail_title: "விவரங்கள்",
+    detail_grouping: "சமூக குழுவாக்கம்",
+    detail_grouping_desc: "இந்த புகார் சமூக குழுவின் ஒரு பகுதியாகும். இது ஒத்த உள்ளூர் குறைகளுடன் முன்னுரிமை அளிக்கப்பட்டுள்ளது.",
+    updates_no_activity: "எந்த செயல்பாடும் இல்லை. புதுப்பிப்புகளைக் காண ஒரு குறையை பதிவு செய்யவும்.",
+    updates_vision: "பார்வை வழங்கப்பட்டது",
+    time_just_now: "இப்போது",
+    time_m_ago: "நிமிடம் முன்",
+    time_h_ago: "மணி முன்",
+    time_d_ago: "நாட்கள் முன்",
+    status_submitted: "சமர்ப்பிக்கப்பட்டது",
+    status_acknowledged: "ஏற்கப்பட்டது",
+    status_grouped: "குழுவாக்கப்பட்டது",
+    status_routed: "அனுப்பப்பட்டது",
+    status_review: "மதிப்பாய்வில் உள்ளது",
+    status_action: "நடவடிக்கை தொடங்கப்பட்டது",
+    status_resolved: "தீர்க்கப்பட்டது",
+    desc_submitted: "உங்கள் குறை கணினியில் பதிவு செய்யப்பட்டுள்ளது.",
+    desc_acknowledged: "குடிமை அமைப்பு மூலம் பெறப்பட்டு ஏற்கப்பட்டது.",
+    desc_grouped: "உங்கள் வார்டில் உள்ள ஒத்த புகார்கள் இத்துடன் இணைக்கப்பட்டுள்ளன.",
+    desc_routed: "மதிப்பாய்வுக்காக சம்பந்தப்பட்ட அதிகாரிக்கு அனுப்பப்பட்டது.",
+    desc_review: "இந்த பிரச்சினை அதிகாரிகளால் மதிப்பிடப்படுகிறது.",
+    desc_action: "ஆரம்பகட்ட நடவடிக்கையும் களப்பணியும் தொடங்கியுள்ளது.",
+    desc_resolved: "குறை தீர்க்கப்பட்டதாக குறிக்கப்பட்டுள்ளது.",
+    sent_to: "மதிப்பாய்வுக்காக ",
+    for_review: " க்கு அனுப்பப்பட்டது.",
+    complaint_logged: "குறை பதிவு செய்யப்பட்டது: ",
+    private_notice: "உங்கள் குறை தனிப்பட்ட முறையில் உள்ளது · வார்டு 12 · பெங்களூர்",
+    community_visions: "சமூக பார்வைகள்",
+    community_neighbors: " அயலவர்கள் தங்கள் நம்பிக்கைகளைப் பகிர்ந்துள்ளனர்",
+    ward_alignment: "% வார்டு ஒருங்கிணைப்பு",
+    more_visions: " மேலும் பார்வைகள் பகிரப்பட்டன",
+    profile_name: "ராஜேஷ் குமார்",
+    profile_ward: "வார்டு 12 · பெங்களூர் வடக்கு",
+    prog_logged: "பதியப்பட்டது",
+    prog_grouped: "குழுவாக்கப்பட்டது",
+    prog_elevated: "உயர்த்தப்பட்டது",
+    prog_routed: "அனுப்பப்பட்டது",
+    comm_desc_1: "உங்கள் குறை சமீபத்தில் ",
+    comm_desc_2: " மற்றவர்களுடன்",
+    comm_desc_3: " குழுவில் இணைந்தது. மேலும் குடிமக்கள் புகாரளிக்கும் போது இந்த அமைப்பு வளர்ந்து முன்னுரிமை பெறுகிறது.",
+    comm_legend_1_title: "1 கியூப்:",
+    comm_legend_1_desc: " 1 உள்ளூர் குறையை குறிக்கிறது.",
+    comm_legend_2_title: "குழுக்கள்:",
+    comm_legend_2_desc: " ஒத்த குறைகள் ஒன்றிணைக்கப்பட்டுள்ளன.",
+    comm_legend_3_title: "அடர்த்தி:",
+    comm_legend_3_desc: " வலுவான சமூக செறிவை குறிக்கிறது.",
+    voice_error: "நான் தவறாக கேட்டிருக்கலாம் — தயவுசெய்து சரிபார்க்கவும் அல்லது மீண்டும் முயற்சிக்கவும்."
   },
 };
 
@@ -286,11 +404,11 @@ function LandingScreen({
             <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-sm ${cfg.bg}`}>
               <cfg.Icon className={`w-3 h-3 ${cfg.color}`} />
             </div>
-            <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Latest Update</p>
+            <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">{t.tracking_latest_update}</p>
           </div>
-          <p className="text-sm font-extrabold text-black leading-snug mb-1">{cfg.label}</p>
-          <p className="text-[11px] text-black/60 leading-relaxed">{cfg.desc}</p>
-          <p className="text-[9px] text-black/30 mt-2 truncate border-t border-black/5 pt-2">Regarding: {activeComplaint.text_input}</p>
+          <p className="text-sm font-extrabold text-black leading-snug mb-1">{t['status_' + activeComplaint.status.toLowerCase().replace(" ", "_")] || cfg.label}</p>
+          <p className="text-[11px] text-black/60 leading-relaxed">{t['desc_' + activeComplaint.status.toLowerCase().replace(" ", "_")] || cfg.desc}</p>
+          <p className="text-[9px] text-black/30 mt-2 truncate border-t border-black/5 pt-2">{t.tracking_regarding}{activeComplaint.text_input}</p>
         </div>
       )}
 
@@ -315,14 +433,14 @@ function LandingScreen({
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function timeAgo(iso: string) {
+function timeAgo(iso: string, t: Record<string, string>) {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t.time_just_now;
+  if (mins < 60) return `${mins}${t.time_m_ago}`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  if (hrs < 24) return `${hrs}${t.time_h_ago}`;
+  return `${Math.floor(hrs / 24)}${t.time_d_ago}`;
 }
 
 const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg: string; Icon: any; desc: string }> = {
@@ -501,7 +619,7 @@ function HomeScreen({
 
         {voiceError && (
           <div className="px-2 text-xs text-red-500/80 font-medium animate-in fade-in slide-in-from-top-1">
-            {lang === "en" ? "I may have misheard that — please review or try again." : "शायद मैंने ठीक से नहीं सुना — कृपया समीक्षा करें या पुनः प्रयास करें।"}
+            {t.voice_error}
           </div>
         )}
 
@@ -523,7 +641,7 @@ function HomeScreen({
 
       <div className="px-6 py-3 text-center">
         <p className="text-[10px] text-black/25">
-          {lang === "en" ? "Your complaint is private · Ward 12 · Bangalore" : "आपकी शिकायत निजी है · वार्ड 12 · बैंगलोर"}
+          {t.private_notice}
         </p>
       </div>
     </div>
@@ -732,41 +850,40 @@ function CommunityScreen({ complaint, onTrack, onBack, t }: {
               <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center border border-orange-200">
                 <FileText className="w-3.5 h-3.5 text-orange-600" />
               </div>
-              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Logged</p>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">{t.prog_logged}</p>
             </div>
             <div className="w-4 h-[1px] bg-black/10" />
             <div className="flex flex-col items-center gap-1 text-center flex-1">
               <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center border border-purple-200">
                 <Users className="w-3.5 h-3.5 text-purple-600" />
               </div>
-              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Grouped</p>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">{t.prog_grouped}</p>
             </div>
             <div className="w-4 h-[1px] bg-black/10" />
             <div className="flex flex-col items-center gap-1 text-center flex-1">
               <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
                 <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
               </div>
-              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Elevated</p>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">{t.prog_elevated}</p>
             </div>
             <div className="w-4 h-[1px] bg-black/10" />
             <div className="flex flex-col items-center gap-1 text-center flex-1">
               <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center border border-green-200">
                 <MapPin className="w-3.5 h-3.5 text-green-600" />
               </div>
-              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">Routed</p>
+              <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest mt-1">{t.prog_routed}</p>
             </div>
           </div>
           
           <p className="text-[11px] text-black/70 leading-relaxed text-center mb-4">
-            Your complaint just joined <span className="font-bold text-black">{similarCount} others</span> in the {complaint.cluster_id} cluster. 
-            The structure above grows as more citizens report issues, elevating its priority for routing.
+            {t.comm_desc_1} <span className="font-bold text-black">{similarCount}{t.comm_desc_2}</span> {t.comm_desc_3}
           </p>
 
           <div className="bg-black/5 rounded-2xl p-3 border border-black/5">
             <ul className="text-[10px] text-black/60 font-medium space-y-1.5 list-disc pl-3">
-              <li><span className="font-bold text-black/80">1 Cube:</span> Represents 1 local complaint.</li>
-              <li><span className="font-bold text-black/80">Clusters:</span> Similar complaints grouped together.</li>
-              <li><span className="font-bold text-black/80">Density:</span> Indicates stronger community concentration.</li>
+              <li><span className="font-bold text-black/80">{t.comm_legend_1_title}</span>{t.comm_legend_1_desc}</li>
+              <li><span className="font-bold text-black/80">{t.comm_legend_2_title}</span>{t.comm_legend_2_desc}</li>
+              <li><span className="font-bold text-black/80">{t.comm_legend_3_title}</span>{t.comm_legend_3_desc}</li>
             </ul>
           </div>
         </div>
@@ -812,7 +929,7 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
             <span>{complaint.location}</span>
             <span>·</span>
             <Clock className="w-3 h-3" />
-            <span>{timeAgo(complaint.timestamp)}</span>
+            <span>{timeAgo(complaint.timestamp, t)}</span>
           </div>
         </div>
 
@@ -820,7 +937,7 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
           <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-3">{t.live_status}</p>
           <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2.5 ${statusCfg.bg}`}>
             <Icon className={`w-4 h-4 shrink-0 ${statusCfg.color} ${complaint.status === "In Progress" ? "animate-spin" : ""}`} />
-            <span className={`font-bold text-sm ${statusCfg.color}`}>{statusCfg.label}</span>
+            <span className={`font-bold text-sm ${statusCfg.color}`}>{t['status_' + complaint.status.toLowerCase().replace(" ", "_")] || statusCfg.label}</span>
             {complaint.status === "Open" && (
               <span className="ml-auto text-[10px] text-amber-600">{t.awaiting}</span>
             )}
@@ -831,7 +948,7 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
               <p className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-2">{t.assigned_to}</p>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-[#FFA958]/20 flex items-center justify-center shrink-0">
-                  <span className="text-sm">🏛️</span>
+                  <Building2 className="w-4 h-4 text-[#FFA958]" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-black">{complaint.assigned_department}</p>
@@ -888,7 +1005,7 @@ function TrackingScreen({ complaint, clusterComplaints, onBack, t }: {
                   <div key={c.id} className="bg-black/3 rounded-xl p-3 flex items-start gap-2.5">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-black/70 leading-snug line-clamp-2">{c.text_input}</p>
-                      <p className="text-[10px] text-black/35 mt-1">{timeAgo(c.timestamp)}</p>
+                      <p className="text-[10px] text-black/35 mt-1">{timeAgo(c.timestamp, t)}</p>
                     </div>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${cfg.bg} ${cfg.color}`}>
                       {c.status}
@@ -944,12 +1061,13 @@ function UpdatesTab({ complaints, onSelect, t }: { complaints: Complaint[], onSe
       const cfg = STATUS_CONFIG[stage];
       if (!cfg) continue;
       
-      let title = stage;
-      let desc = cfg.desc;
+      const stageKey = stage.toLowerCase().replace(" ", "_");
+      let title = t[`status_${stageKey}`] || stage;
+      let desc = t[`desc_${stageKey}`] || cfg.desc;
       if (stage === "Submitted") {
-        desc = `Complaint logged: ${c.text_input}`;
+        desc = `${t.complaint_logged}${c.text_input}`;
       } else if (stage === "Routed" && c.assigned_department) {
-        desc = `Sent to ${c.assigned_department} for review.`;
+        desc = `${t.sent_to}${c.assigned_department}${t.for_review}`;
       }
       
       list.push({
@@ -971,7 +1089,7 @@ function UpdatesTab({ complaints, onSelect, t }: { complaints: Complaint[], onSe
         id: `${c.id}-vision`,
         complaintId: c.id,
         type: "vision",
-        title: "Vision Contributed",
+        title: t.updates_vision,
         description: c.structured_output.desired_outcome,
         time: new Date(baseTime + 60000), 
         Icon: Sparkles,
@@ -997,7 +1115,7 @@ function UpdatesTab({ complaints, onSelect, t }: { complaints: Complaint[], onSe
         {sortedEvents.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
             <Bell className="w-10 h-10 text-black/15" />
-            <p className="text-sm text-black/40">No activity yet.<br />Submit a complaint to see updates.</p>
+            <p className="text-sm text-black/40">{t.updates_no_activity}</p>
           </div>
         )}
 
@@ -1019,10 +1137,10 @@ function UpdatesTab({ complaints, onSelect, t }: { complaints: Complaint[], onSe
                 <div className="bg-white/80 rounded-2xl border border-black/8 p-3 shadow-sm hover:border-black/15 transition-colors">
                   <div className="flex items-start justify-between mb-1.5">
                     <p className="text-xs font-extrabold text-black">{evt.title}</p>
-                    <span className="text-[10px] text-black/40 font-medium">{timeAgo(evt.time.toISOString())}</span>
+                    <span className="text-[10px] text-black/40 font-medium">{timeAgo(evt.time.toISOString(), t)}</span>
                   </div>
                   <p className="text-[11px] text-black/70 leading-snug mb-1">{evt.description}</p>
-                  <p className="text-[9px] text-black/30 font-medium truncate pt-1 border-t border-black/5">Regarding: {evt.originalTitle}</p>
+                  <p className="text-[9px] text-black/30 font-medium truncate pt-1 border-t border-black/5">{t.tracking_regarding}{evt.originalTitle}</p>
                 </div>
               </div>
             ))}
@@ -1154,8 +1272,8 @@ function CommunityTab({ complaints, t }: { complaints: Complaint[], t: Record<st
                 <span className="text-sm">✦</span>
               </div>
               <div>
-                <p className="text-xs font-extrabold text-[#FFA758]">Community Visions</p>
-                <p className="text-[10px] text-black/40">{withVisions} neighbors shared their hopes</p>
+                <p className="text-xs font-extrabold text-[#FFA758]">{t.community_visions}</p>
+                <p className="text-[10px] text-black/40">{withVisions}{t.community_neighbors}</p>
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -1168,7 +1286,7 @@ function CommunityTab({ complaints, t }: { complaints: Complaint[], t: Record<st
                       <span className="text-[9px] text-[#FFA958] font-bold">✦</span>
                       <span className="text-[9px] font-semibold text-[#FFA958] uppercase tracking-wider">{c.cluster_id}</span>
                       <span className="text-[9px] text-black/20">·</span>
-                      <span className="text-[9px] text-black/30">{CLUSTER_COMMUNITY_PCT[c.cluster_id]}% ward alignment</span>
+                      <span className="text-[9px] text-black/30">{CLUSTER_COMMUNITY_PCT[c.cluster_id]}{t.ward_alignment}</span>
                     </div>
                     <p className="text-xs font-semibold text-black/80 leading-snug line-clamp-2">
                       "{c.structured_output!.desired_outcome}"
@@ -1177,7 +1295,7 @@ function CommunityTab({ complaints, t }: { complaints: Complaint[], t: Record<st
                 ))}
             </div>
             {withVisions > 3 && (
-              <p className="text-[10px] text-black/30 text-center mt-2">+{withVisions - 3} more visions shared</p>
+              <p className="text-[10px] text-black/30 text-center mt-2">+{withVisions - 3}{t.more_visions}</p>
             )}
           </div>
         )}
@@ -1236,8 +1354,8 @@ function ProfileTab({ complaints, onViewAll, t }: { complaints: Complaint[], onV
             <span className="font-extrabold text-blue-600 text-xl">R</span>
           </div>
           <div className="flex-1">
-            <p className="font-extrabold text-black text-lg leading-tight">Rajesh Kumar</p>
-            <p className="text-xs font-semibold text-black/50 mt-0.5">Ward 12 · Bangalore North</p>
+            <p className="font-extrabold text-black text-lg leading-tight">{t.profile_name}</p>
+            <p className="text-xs font-semibold text-black/50 mt-0.5">{t.profile_ward}</p>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">{t.profile_resident_since}</span>
               <span className="text-[9px] font-bold uppercase tracking-wider text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">{t.profile_lang}</span>
@@ -1270,7 +1388,7 @@ function ProfileTab({ complaints, onViewAll, t }: { complaints: Complaint[], onV
               </div>
               <p className="text-[10px] font-bold text-[#FFA958] uppercase tracking-widest mb-1.5 relative z-10">{t.profile_latest_issue}</p>
               <p className="text-sm font-bold text-black/80 leading-snug line-clamp-2 relative z-10 pr-6">{latestComplaint.text_input}</p>
-              <p className="text-xs font-semibold text-black/50 mt-2 relative z-10">{t.profile_status}<span className="text-black/80">{latestComplaint.status}</span></p>
+              <p className="text-xs font-semibold text-black/50 mt-2 relative z-10">{t.profile_status}<span className="text-black/80">{t['status_' + latestComplaint.status.toLowerCase().replace(" ", "_")] || latestComplaint.status}</span></p>
             </div>
           )}
 
@@ -1413,12 +1531,12 @@ function MyComplaintsScreen({ complaints, onSelect, onBack, t }: { complaints: C
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-bold text-black/80 leading-snug line-clamp-2">{c.text_input}</p>
-                    <span className="text-[10px] text-black/40 font-semibold whitespace-nowrap mt-0.5">{timeAgo(c.timestamp)}</span>
+                    <span className="text-[10px] text-black/40 font-semibold whitespace-nowrap mt-0.5">{timeAgo(c.timestamp, t)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.color} flex items-center gap-1.5`}>
                       <cfg.Icon className="w-3 h-3" />
-                      {c.status}
+                      {t['status_' + c.status.toLowerCase().replace(" ", "_")] || c.status}
                     </span>
                     <span className="text-[10px] font-semibold text-black/40 bg-black/5 px-2.5 py-1 rounded-full flex items-center gap-1 max-w-[120px] truncate">
                       <MapPin className="w-3 h-3 shrink-0" />
@@ -1464,10 +1582,10 @@ function ComplaintDetailScreen({ complaint, onBack, t }: { complaint: Complaint,
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${currentCfg.bg} ${currentCfg.color} flex items-center gap-1.5`}>
               <currentCfg.Icon className="w-3.5 h-3.5" />
-              {currentCfg.label}
+              {t['status_' + complaint.status.toLowerCase().replace(" ", "_")] || currentCfg.label}
             </span>
             <span className="text-[11px] font-semibold text-black/40 bg-black/5 px-3 py-1 rounded-full">
-              {timeAgo(complaint.timestamp)}
+              {timeAgo(complaint.timestamp, t)}
             </span>
           </div>
 
@@ -1476,9 +1594,9 @@ function ComplaintDetailScreen({ complaint, onBack, t }: { complaint: Complaint,
               <Users className="w-3.5 h-3.5 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs font-extrabold text-purple-900 mb-0.5">Community Grouping</p>
+              <p className="text-xs font-extrabold text-purple-900 mb-0.5">{t.detail_grouping}</p>
               <p className="text-[11px] text-purple-700 leading-snug">
-                This complaint is part of the <span className="font-bold">{complaint.cluster_id}</span> cluster. It has been prioritized along with similar local issues.
+                {t.detail_grouping_desc}
               </p>
             </div>
           </div>
@@ -1493,9 +1611,11 @@ function ComplaintDetailScreen({ complaint, onBack, t }: { complaint: Complaint,
               const stageIdx = currentIndex - i; // reverse order
               const stage = STAGES[stageIdx];
               const cfg = STATUS_CONFIG[stage];
-              let desc = cfg.desc;
-              if (stage === "Submitted") desc = `Complaint logged: ${complaint.text_input}`;
-              else if (stage === "Routed" && complaint.assigned_department) desc = `Sent to ${complaint.assigned_department} for review.`;
+              const stageKey = stage.toLowerCase().replace(" ", "_");
+              let title = t[`status_${stageKey}`] || stage;
+              let desc = t[`desc_${stageKey}`] || cfg.desc;
+              if (stage === "Submitted") desc = `${t.complaint_logged}${complaint.text_input}`;
+              else if (stage === "Routed" && complaint.assigned_department) desc = `${t.sent_to}${complaint.assigned_department}${t.for_review}`;
 
               const isLatest = stageIdx === currentIndex;
 
@@ -1506,9 +1626,9 @@ function ComplaintDetailScreen({ complaint, onBack, t }: { complaint: Complaint,
                   </div>
                   <div className={`rounded-2xl border p-3 ${isLatest ? 'bg-white shadow-md border-black/15' : 'bg-white/60 border-black/5 shadow-sm'}`}>
                     <div className="flex items-start justify-between mb-1">
-                      <p className={`text-xs font-extrabold ${isLatest ? 'text-black' : 'text-black/60'}`}>{cfg.label}</p>
+                      <p className={`text-xs font-extrabold ${isLatest ? 'text-black' : 'text-black/60'}`}>{title}</p>
                       <span className="text-[10px] text-black/40 font-medium">
-                        {timeAgo(new Date(baseTime + (stageIdx * 3600000)).toISOString())}
+                        {timeAgo(new Date(baseTime + (stageIdx * 3600000)).toISOString(), t)}
                       </span>
                     </div>
                     <p className={`text-[11px] leading-snug ${isLatest ? 'text-black/80 font-medium' : 'text-black/50'}`}>
